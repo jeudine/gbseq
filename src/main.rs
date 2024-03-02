@@ -1,7 +1,8 @@
-use tseq::run;
+use tseq::{run, Pattern};
 
 fn main() {
-	match run() {
+	let pattern = Pattern { bpm: vec![155] };
+	match run(1, pattern) {
 		Ok(_) => {}
 		Err(e) => {
 			eprintln!("[ERROR] {e}");

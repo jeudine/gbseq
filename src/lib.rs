@@ -1,8 +1,13 @@
-use midir::{ConnectError, InitError, MidiOutput, MidiOutputPort};
+use clock::{clock_gen, compute_period_us};
+use midir::{ConnectError, InitError, MidiOutput, MidiOutputConnection, MidiOutputPort};
+pub use pattern::Pattern;
 use promptly::{prompt_default, ReadlineError};
-use std::thread::sleep;
-use std::time::Duration;
+use std::sync::{Arc, Mutex};
+use std::thread::{sleep, spawn};
 use thiserror::Error;
+mod clock;
+mod message;
+pub mod pattern;
 
 #[derive(Error, Debug)]
 pub enum TSeqError {
@@ -18,9 +23,14 @@ pub enum TSeqError {
 	MidiOutput(#[from] ConnectError<MidiOutput>),
 }
 
+struct Channel {
+	conn: MidiOutputConnection,
+	period_us: u64,
+}
+
 pub struct Step {}
 
-pub fn run() -> Result<(), TSeqError> {
+pub fn run(channel: u8, pattern: Pattern) -> Result<(), TSeqError> {
 	let midi_out = MidiOutput::new("out")?;
 	let out_ports = midi_out.ports();
 	let out_port: &MidiOutputPort = match out_ports.len() {
@@ -45,7 +55,20 @@ pub fn run() -> Result<(), TSeqError> {
 			}
 		}
 	};
-	let mut conn_out = midi_out.connect(out_port, "output connection")?;
+
+	let conn = midi_out.connect(out_port, "output connection")?;
+
+	let channel = Channel {
+		conn,
+		period_us: compute_period_us(pattern.bpm[0]),
+	};
+	let channel_arc = Arc::new(Mutex::new(channel));
+
+	// Clock
+	let channel_arc_1 = channel_arc.clone();
+	let _ = spawn(move || clock_gen(&channel_arc_1));
+
+	/*
 	{
 		// Define a new scope in which the closure `play_note` borrows conn_out, so it can be called easily
 		let mut play_note = |note: u8, duration: u64| {
@@ -70,10 +93,12 @@ pub fn run() -> Result<(), TSeqError> {
 		play_note(56, 4);
 		play_note(54, 4);
 	}
-	sleep(Duration::from_millis(150));
+	*/
+
 	println!("\nClosing connection");
 	// This is optional, the connection would automatically be closed as soon as it goes out of scope
-	conn_out.close();
+	loop {}
+
 	println!("Connection closed");
 	Ok(())
 }
