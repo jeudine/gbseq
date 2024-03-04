@@ -12,7 +12,7 @@ pub fn clock_gen(channel_arc: &Arc<(Mutex<Channel>, Condvar)>) {
 		let _ = channel.conn.send(&[message::CLOCK]);
 		let period = channel.period_us;
 		channel.step += 1;
-		// Unlock the mutex before the sleep
+		// Unlock the mutex
 		drop(channel);
 		cvar.notify_one();
 		sleep(Duration::from_micros(period));

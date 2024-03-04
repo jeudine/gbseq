@@ -1,14 +1,18 @@
+use action::handle;
 use clock::{clock_gen, compute_period_us};
 use message::messages_gen;
 use midir::{ConnectError, InitError, MidiOutput, MidiOutputConnection, MidiOutputPort};
 pub use pattern::Pattern;
-use promptly::{prompt_default, ReadlineError};
+use promptly::{prompt, prompt_default, ReadlineError};
+use state::State;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::spawn;
 use thiserror::Error;
+mod action;
 mod clock;
 mod message;
 pub mod pattern;
+mod state;
 
 #[derive(Error, Debug)]
 pub enum TSeqError {
@@ -67,14 +71,23 @@ pub fn run(channel: u8, pattern: Pattern) -> Result<(), TSeqError> {
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
+	let state = State::default();
+	let state_arc = Arc::new(Mutex::new(state));
+
 	// Clock
 	let channel_arc_1 = channel_arc.clone();
 	let _ = spawn(move || clock_gen(&channel_arc_1));
 
 	// Messages
 	let channel_arc_1 = channel_arc.clone();
-	let _ = spawn(move || messages_gen(&channel_arc_1));
+	let state_arc_1 = state_arc.clone();
+	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1));
 
-	loop {}
+	loop {
+		let s: String = prompt("Action")?;
+		if handle(&s, &channel_arc, &state_arc) {
+			break;
+		}
+	}
 	Ok(())
 }
