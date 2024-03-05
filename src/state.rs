@@ -1,8 +1,16 @@
 use std::default::Default;
 
 #[derive(Default)]
-pub struct State {
-	pub running: bool,
+pub enum Stage {
+	#[default]
+	Break,
+	Drop,
+	HighPass,
+	Breakbeat,
 }
 
-impl State {}
+#[derive(Default)]
+pub struct State {
+	pub running: bool,
+	pub stage: Stage,
+}

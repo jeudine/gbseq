@@ -12,6 +12,7 @@ mod action;
 mod clock;
 mod message;
 pub mod pattern;
+mod sequence;
 mod state;
 
 #[derive(Error, Debug)]

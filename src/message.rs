@@ -43,10 +43,20 @@ pub fn messages_gen(channel_arc: &Arc<(Mutex<Channel>, Condvar)>, state_arc: &Ar
 	}
 }
 
-fn start_note(channel: u8, note: u8, velocity: u8) -> Vec<u8> {
+pub fn start_note(channel: u8, note: u8, velocity: u8) -> Vec<u8> {
 	vec![NOTE_ON | channel, note, velocity]
 }
 
-fn end_note(channel: u8, note: u8, velocity: u8) -> Vec<u8> {
+pub fn end_note(channel: u8, note: u8, velocity: u8) -> Vec<u8> {
 	vec![NOTE_OFF | channel, note, velocity]
+}
+
+pub fn param_value(v: f32) -> u8 {
+	if v < -1.0 {
+		return 0;
+	}
+	if v > 1.0 {
+		return 127;
+	}
+	63 + (v * 63.0).round() as u8
 }
