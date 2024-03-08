@@ -37,7 +37,7 @@ struct Channel {
 
 pub struct Step {}
 
-pub fn run(channel: u8, pattern: Pattern) -> Result<(), TSeqError> {
+pub fn run(channel: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	let midi_out = MidiOutput::new("out")?;
 	let out_ports = midi_out.ports();
 	let out_port: &MidiOutputPort = match out_ports.len() {
@@ -67,7 +67,7 @@ pub fn run(channel: u8, pattern: Pattern) -> Result<(), TSeqError> {
 
 	let channel = Channel {
 		conn,
-		period_us: compute_period_us(pattern.bpm[0]),
+		period_us: compute_period_us(patterns[0].bpm),
 		step: 0,
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));

@@ -1,5 +1,5 @@
 use crate::message;
-use crate::state::State;
+use crate::state::{Stage, State};
 use crate::Channel;
 use std::default::Default;
 use std::mem::drop;
@@ -10,12 +10,6 @@ use std::time::Duration;
 enum System {
 	StartStop,
 	Quit,
-}
-
-enum Stage {
-	Drop,
-	Break,
-	Breakbeat,
 }
 
 enum HH {
@@ -53,6 +47,16 @@ pub fn handle(
 			System::Quit => return true,
 		}
 	}
+
+	if let Some(a) = action.stage {
+		match a {
+			Stage::Break => {}
+			Stage::Drop => {}
+			Stage::HighPass => {}
+			Stage::Breakbeat => {}
+			_ => unreachable!(),
+		}
+	}
 	false
 }
 
@@ -63,6 +67,10 @@ impl Action {
 			match c {
 				's' => action.system = Some(System::StartStop),
 				'q' => action.system = Some(System::Quit),
+				'1' => action.stage = Some(Stage::Break),
+				'2' => action.stage = Some(Stage::Drop),
+				'3' => action.stage = Some(Stage::HighPass),
+				'4' => action.stage = Some(Stage::Breakbeat),
 				_ => {}
 			}
 		}
