@@ -22,4 +22,12 @@ impl Pattern {
 			Stage::DropToBreak => &self.drop_to_break[seq_id].0,
 		}
 	}
+
+	pub fn get_transition_len(&self, seq_id: usize, stage: &Stage) -> u32 {
+		match stage {
+			Stage::BreakToDrop => self.break_to_drop[seq_id].1,
+			Stage::DropToBreak => self.drop_to_break[seq_id].1,
+			_ => unreachable!(),
+		}
+	}
 }

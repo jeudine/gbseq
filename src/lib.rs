@@ -72,7 +72,8 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
-	let state = State::default();
+	let state = State::new(patterns);
+
 	let state_arc = Arc::new(Mutex::new(state));
 
 	// Clock
@@ -82,7 +83,7 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	// Messages
 	let channel_arc_1 = channel_arc.clone();
 	let state_arc_1 = state_arc.clone();
-	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id));
+	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id - 1));
 
 	loop {
 		let s: String = prompt("Action")?;

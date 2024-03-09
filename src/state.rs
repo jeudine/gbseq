@@ -25,18 +25,29 @@ pub struct State {
 }
 
 impl State {
+	pub fn new(patterns: Vec<Pattern>) -> Self {
+		let mut state = State::default();
+		state.patterns = patterns;
+		state
+	}
+
 	pub fn get_cur_sequence(&mut self, step: u32) -> &Box<dyn Sequence + Send> {
+		// Enter in a transition
+		if step % 96 == 0 && self.next_stage != self.stage {
+			self.stage = self.next_stage;
+			self.transition_end_step = self.patterns[self.cur_pattern_id]
+				.get_transition_len(self.cur_seq_id, &self.stage)
+				+ step;
+		}
+
 		// If in a transition & transition is over
-		if self.is_in_transition() && step > self.transition_end_step {
+		if self.is_in_transition() && step >= self.transition_end_step {
 			self.stage = State::get_next_stage(&self.stage);
 			self.next_stage = self.stage;
 		}
 
-		// Enter in a transition
-		if step % 96 == 0 && self.next_stage != self.stage {
-			self.stage = self.next_stage;
-		}
-		println!("{:?}", self.stage);
+		//TODO: add debug mode
+		//println!("{}: {:?}", step, self.stage);
 		self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage)
 	}
 

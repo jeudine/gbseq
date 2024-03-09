@@ -33,7 +33,7 @@ fn main() {
 	match run(1, patterns) {
 		Ok(_) => {}
 		Err(e) => {
-			eprintln!("[ERROR] {e}");
+			eprintln!("[ERROR] {}", e);
 			std::process::exit(1);
 		}
 	}
