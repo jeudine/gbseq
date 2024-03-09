@@ -2,7 +2,7 @@ use crate::pattern::Pattern;
 use crate::sequence::Sequence;
 use std::default::Default;
 
-#[derive(Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub enum Stage {
 	#[default]
 	Break,
@@ -19,6 +19,7 @@ pub struct State {
 	patterns: Vec<Pattern>,
 	cur_pattern_id: usize,
 	stage: Stage,
+	next_stage: Stage,
 	cur_seq_id: usize,
 	transition_end_step: u32,
 }
@@ -28,7 +29,14 @@ impl State {
 		// If in a transition & transition is over
 		if self.is_in_transition() && step > self.transition_end_step {
 			self.stage = State::get_next_stage(&self.stage);
+			self.next_stage = self.stage;
 		}
+
+		// Enter in a transition
+		if step % 96 == 0 && self.next_stage != self.stage {
+			self.stage = self.next_stage;
+		}
+		println!("{:?}", self.stage);
 		self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage)
 	}
 
@@ -45,6 +53,39 @@ impl State {
 			Stage::BreakToDrop => true,
 			Stage::DropToBreak => true,
 			_ => false,
+		}
+	}
+
+	// If in a transition, the next stage won't be set
+	pub fn set_next_stage(&mut self, stage: &Stage) {
+		match &self.stage {
+			Stage::Break => match stage {
+				Stage::Drop => self.next_stage = Stage::BreakToDrop,
+				Stage::HighPass => {}
+				Stage::Breakbeat => {}
+				_ => {}
+			},
+			Stage::Drop => match stage {
+				Stage::Break => self.next_stage = Stage::DropToBreak,
+				Stage::HighPass => {}
+				Stage::Breakbeat => {}
+				_ => {}
+			},
+			Stage::HighPass => match stage {
+				Stage::Break => {}
+				Stage::Drop => {}
+				Stage::HighPass => {}
+				Stage::Breakbeat => {}
+				_ => {}
+			},
+			Stage::Breakbeat => match stage {
+				Stage::Break => {}
+				Stage::Drop => {}
+				Stage::HighPass => {}
+				Stage::Breakbeat => {}
+				_ => {}
+			},
+			_ => {}
 		}
 	}
 }

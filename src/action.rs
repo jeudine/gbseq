@@ -1,6 +1,6 @@
-use crate::message;
 use crate::state::{Stage, State};
 use crate::Channel;
+use crate::{log_send, message};
 use std::default::Default;
 use std::mem::drop;
 use std::sync::{Arc, Condvar, Mutex};
@@ -40,7 +40,7 @@ pub fn handle(
 				if state.running {
 					channel.step = 94;
 				} else {
-					let _ = channel.conn.send(&[message::STOP]);
+					log_send(&mut channel.conn, &[message::STOP]);
 				}
 				return false;
 			}
@@ -49,14 +49,9 @@ pub fn handle(
 	}
 
 	if let Some(a) = action.stage {
-		match a {
-			Stage::Break => {}
-			Stage::Drop => {}
-			Stage::HighPass => {}
-			Stage::Breakbeat => {}
-			_ => unreachable!(),
-		}
+		state.set_next_stage(&a);
 	}
+
 	false
 }
 
