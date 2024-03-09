@@ -1,3 +1,4 @@
+use crate::log_send;
 use crate::message;
 use crate::Channel;
 use std::mem::drop;
@@ -9,7 +10,7 @@ pub fn clock_gen(channel_arc: &Arc<(Mutex<Channel>, Condvar)>) {
 	loop {
 		let (channel, cvar) = &**channel_arc;
 		let mut channel = channel.lock().unwrap();
-		let _ = channel.conn.send(&[message::CLOCK]);
+		log_send(&mut channel.conn, &[message::CLOCK]);
 		let period = channel.period_us;
 		channel.step += 1;
 		// Unlock the mutex

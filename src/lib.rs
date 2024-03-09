@@ -12,7 +12,7 @@ mod action;
 mod clock;
 mod message;
 pub mod pattern;
-mod sequence;
+pub mod sequence;
 mod state;
 
 #[derive(Error, Debug)]
@@ -37,7 +37,7 @@ struct Channel {
 
 pub struct Step {}
 
-pub fn run(channel: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
+pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	let midi_out = MidiOutput::new("out")?;
 	let out_ports = midi_out.ports();
 	let out_port: &MidiOutputPort = match out_ports.len() {
@@ -82,7 +82,7 @@ pub fn run(channel: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	// Messages
 	let channel_arc_1 = channel_arc.clone();
 	let state_arc_1 = state_arc.clone();
-	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1));
+	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id));
 
 	loop {
 		let s: String = prompt("Action")?;
@@ -91,4 +91,11 @@ pub fn run(channel: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 		}
 	}
 	Ok(())
+}
+
+pub fn log_send(conn: &mut MidiOutputConnection, message: &[u8]) {
+	match conn.send(message) {
+		Err(x) => eprintln!("[ERROR] {} (message: {:?})", x, message),
+		_ => {}
+	}
 }
