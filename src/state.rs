@@ -31,7 +31,7 @@ impl State {
 		state
 	}
 
-	pub fn get_cur_sequence(&mut self, step: u32) -> &Box<dyn Sequence + Send> {
+	pub fn get_cur_sequence(&mut self, step: u32) -> &mut Box<dyn Sequence + Send> {
 		// Enter in a transition
 		if step % 96 == 0 && self.next_stage != self.stage {
 			self.stage = self.next_stage;

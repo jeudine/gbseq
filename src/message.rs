@@ -1,4 +1,5 @@
 use crate::log_send;
+use crate::sequence::Sequence;
 use crate::state::State;
 use crate::Channel;
 use std::sync::{Arc, Condvar, Mutex};
@@ -15,6 +16,7 @@ pub fn messages_gen(
 ) {
 	let (channel, cvar) = &**channel_arc;
 	let mut channel = channel.lock().unwrap();
+	let mut rng = rand::thread_rng();
 	loop {
 		channel = cvar.wait(channel).unwrap();
 
@@ -28,7 +30,7 @@ pub fn messages_gen(
 			log_send(&mut channel.conn, &[START]);
 		}
 
-		let sequence = state.get_cur_sequence(channel.step);
-		sequence.run(channel.step, &mut channel.conn, channel_id);
+		let sequence: &mut Box<dyn Sequence + Send> = state.get_cur_sequence(channel.step);
+		sequence.run(channel.step, &mut channel.conn, channel_id, &mut rng);
 	}
 }

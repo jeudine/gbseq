@@ -7,7 +7,7 @@ use tseq::{run, Pattern};
 
 fn main() {
 	let break0 = Break0 {};
-	let drop0 = Drop0 {};
+	let drop0 = Drop0::default();
 
 	let patterns = [155, 156, 158, 160, 162, 164, 166, 168]
 		.iter()

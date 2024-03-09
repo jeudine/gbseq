@@ -1,7 +1,14 @@
 use midir::MidiOutputConnection;
+use rand::rngs::ThreadRng;
 
 pub trait Sequence {
-	fn run(&self, step: u32, conn: &mut MidiOutputConnection, channel_id: u8);
+	fn run(
+		&mut self,
+		step: u32,
+		conn: &mut MidiOutputConnection,
+		channel_id: u8,
+		rng: &mut ThreadRng,
+	);
 }
 
 pub const SP1: u8 = 48;
