@@ -8,10 +8,15 @@ pub trait Sequence {
 		conn: &mut MidiOutputConnection,
 		channel_id: u8,
 		rng: &mut ThreadRng,
+		oh: bool,
+		ch: bool,
 	);
 }
 
 pub const SP1: u8 = 48;
+pub const SP2: u8 = 49;
+pub const SP3: u8 = 50;
+pub const SP4: u8 = 51;
 pub const NOTE_ON: u8 = 0x90;
 pub const NOTE_OFF: u8 = 0x80;
 

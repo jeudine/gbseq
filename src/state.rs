@@ -22,6 +22,10 @@ pub struct State {
 	next_stage: Stage,
 	cur_seq_id: usize,
 	transition_end_step: u32,
+	pub oh: bool,
+	pub ch: bool,
+	pub oh_toggle: bool,
+	pub ch_toggle: bool,
 }
 
 impl State {
@@ -33,17 +37,36 @@ impl State {
 
 	pub fn get_cur_sequence(&mut self, step: u32) -> &mut Box<dyn Sequence + Send> {
 		// Enter in a transition
-		if step % 96 == 0 && self.next_stage != self.stage {
-			self.stage = self.next_stage;
-			self.transition_end_step = self.patterns[self.cur_pattern_id]
-				.get_transition_len(self.cur_seq_id, &self.stage)
-				+ step;
+		if step % 96 == 0 {
+			if self.next_stage != self.stage {
+				self.stage = self.next_stage;
+				self.transition_end_step = self.patterns[self.cur_pattern_id]
+					.get_transition_len(self.cur_seq_id, &self.stage)
+					+ step;
+			} else {
+				if self.oh_toggle {
+					self.oh = !self.oh;
+					self.oh_toggle = false;
+				}
+				if self.ch_toggle {
+					self.ch = !self.ch;
+					self.ch_toggle = false;
+				}
+			}
 		}
 
 		// If in a transition & transition is over
 		if self.is_in_transition() && step >= self.transition_end_step {
 			self.stage = State::get_next_stage(&self.stage);
 			self.next_stage = self.stage;
+			if self.oh_toggle {
+				self.oh = !self.oh;
+				self.oh_toggle = false;
+			}
+			if self.ch_toggle {
+				self.ch = !self.ch;
+				self.ch_toggle = false;
+			}
 		}
 
 		//TODO: add debug mode

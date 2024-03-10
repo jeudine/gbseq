@@ -30,7 +30,16 @@ pub fn messages_gen(
 			log_send(&mut channel.conn, &[START]);
 		}
 
+		let oh = state.oh;
+		let ch = state.ch;
 		let sequence: &mut Box<dyn Sequence + Send> = state.get_cur_sequence(channel.step);
-		sequence.run(channel.step, &mut channel.conn, channel_id, &mut rng);
+		sequence.run(
+			channel.step,
+			&mut channel.conn,
+			channel_id,
+			&mut rng,
+			oh,
+			ch,
+		);
 	}
 }

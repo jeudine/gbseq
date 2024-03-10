@@ -1,4 +1,5 @@
 mod drop;
+mod hh;
 mod mbreak;
 use drop::Drop0;
 use mbreak::Break0;
@@ -6,7 +7,7 @@ use tseq::sequence::Sequence;
 use tseq::{run, Pattern};
 
 fn main() {
-	let break0 = Break0 {};
+	let break0 = Break0::default();
 	let drop0 = Drop0::default();
 
 	let patterns = [155, 156, 158, 160, 162, 164, 166, 168]

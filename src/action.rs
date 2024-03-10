@@ -12,15 +12,12 @@ enum System {
 	Quit,
 }
 
-enum HH {
-	OnOff,
-}
 #[derive(Default)]
 struct Action {
 	system: Option<System>,
 	stage: Option<Stage>,
-	oh: Option<HH>,
-	ch: Option<HH>,
+	ch_toggle: bool,
+	oh_toggle: bool,
 }
 
 pub fn handle(
@@ -33,10 +30,10 @@ pub fn handle(
 	let mut state = state_arc.lock().unwrap();
 
 	if let Some(a) = action.system {
+		let mut channel = channel.lock().unwrap();
 		match a {
 			System::StartStop => {
 				state.running = !state.running;
-				let mut channel = channel.lock().unwrap();
 				if state.running {
 					channel.step = 94;
 				} else {
@@ -44,13 +41,19 @@ pub fn handle(
 				}
 				return false;
 			}
-			System::Quit => return true,
+			System::Quit => {
+				log_send(&mut channel.conn, &[message::STOP]);
+				return true;
+			}
 		}
 	}
 
 	if let Some(a) = action.stage {
 		state.set_next_stage(&a);
 	}
+
+	state.oh_toggle = action.oh_toggle;
+	state.ch_toggle = action.ch_toggle;
 
 	false
 }
@@ -66,6 +69,8 @@ impl Action {
 				'2' => action.stage = Some(Stage::Drop),
 				'3' => action.stage = Some(Stage::HighPass),
 				'4' => action.stage = Some(Stage::Breakbeat),
+				'5' => action.oh_toggle = true,
+				'6' => action.ch_toggle = true,
 				_ => {}
 			}
 		}
