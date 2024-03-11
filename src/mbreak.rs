@@ -2,7 +2,7 @@ use crate::hh::HH;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use tseq::log_send;
-use tseq::sequence::{end_note, param_value, start_note, Sequence, SP2, SP3};
+use tseq::sequence::{end_note, param_value, start_note, Sequence, LFO, SP2, SP3};
 
 #[derive(Copy, Clone, Default)]
 pub struct Break0 {
@@ -18,9 +18,14 @@ impl Sequence for Break0 {
 		rng: &mut ThreadRng,
 		oh: bool,
 		ch: bool,
+		oh_lfo: &LFO,
+		ch_lfo: &LFO,
 	) {
+		if oh {
+			self.hh.trigger_oh(step, conn, channel_id, rng, oh_lfo);
+		}
 		if ch {
-			self.hh.trigger_ch(step, conn, channel_id);
+			self.hh.trigger_ch(step, conn, channel_id, ch_lfo);
 		}
 	}
 }

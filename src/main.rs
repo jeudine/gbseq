@@ -10,7 +10,8 @@ fn main() {
 	let break0 = Break0::default();
 	let drop0 = Drop0::default();
 
-	let patterns = [155, 156, 158, 160, 162, 164, 166, 168]
+	//let patterns = [155, 156, 158, 160, 162, 164, 166, 168]
+	let patterns = [164]
 		.iter()
 		.map(|bpm| {
 			let s_break: Vec<Box<dyn Sequence + Send>> = vec![Box::new(break0)];

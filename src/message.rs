@@ -32,7 +32,11 @@ pub fn messages_gen(
 
 		let oh = state.oh;
 		let ch = state.ch;
-		let sequence: &mut Box<dyn Sequence + Send> = state.get_cur_sequence(channel.step);
+		let oh_lfo = state.oh_lfo;
+		let ch_lfo = state.ch_lfo;
+
+		let sequence: &mut Box<dyn Sequence + Send> =
+			state.get_cur_sequence(channel.step, &mut rng);
 		sequence.run(
 			channel.step,
 			&mut channel.conn,
@@ -40,6 +44,8 @@ pub fn messages_gen(
 			&mut rng,
 			oh,
 			ch,
+			&oh_lfo,
+			&ch_lfo,
 		);
 	}
 }

@@ -1,5 +1,6 @@
 use crate::pattern::Pattern;
-use crate::sequence::Sequence;
+use crate::sequence::{Sequence, LFO};
+use rand::rngs::ThreadRng;
 use std::default::Default;
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
@@ -26,6 +27,8 @@ pub struct State {
 	pub ch: bool,
 	pub oh_toggle: bool,
 	pub ch_toggle: bool,
+	pub oh_lfo: LFO,
+	pub ch_lfo: LFO,
 }
 
 impl State {
@@ -35,7 +38,11 @@ impl State {
 		state
 	}
 
-	pub fn get_cur_sequence(&mut self, step: u32) -> &mut Box<dyn Sequence + Send> {
+	pub fn get_cur_sequence(
+		&mut self,
+		step: u32,
+		rng: &mut ThreadRng,
+	) -> &mut Box<dyn Sequence + Send> {
 		// Enter in a transition
 		if step % 96 == 0 {
 			if self.next_stage != self.stage {
@@ -47,10 +54,18 @@ impl State {
 				if self.oh_toggle {
 					self.oh = !self.oh;
 					self.oh_toggle = false;
+					if self.oh {
+						self.oh_lfo
+							.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
+					}
 				}
 				if self.ch_toggle {
 					self.ch = !self.ch;
 					self.ch_toggle = false;
+					if self.ch {
+						self.ch_lfo
+							.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
+					}
 				}
 			}
 		}
@@ -62,10 +77,18 @@ impl State {
 			if self.oh_toggle {
 				self.oh = !self.oh;
 				self.oh_toggle = false;
+				if self.oh {
+					self.oh_lfo
+						.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
+				}
 			}
 			if self.ch_toggle {
 				self.ch = !self.ch;
 				self.ch_toggle = false;
+				if self.ch {
+					self.ch_lfo
+						.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
+				}
 			}
 		}
 
