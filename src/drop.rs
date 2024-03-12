@@ -34,7 +34,7 @@ impl Sequence for Drop0 {
 			log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 		}
 
-		if t == 72 && rng.gen_bool(SKIPPED_PROBA) {
+		if t == 72 && !rng.gen_bool(SKIPPED_PROBA) {
 			log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 		}
 
