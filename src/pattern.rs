@@ -10,6 +10,8 @@ pub struct Pattern {
 	pub s_breakbeat: Vec<Box<dyn Sequence + Send>>,
 	pub break_to_drop: Vec<(Box<dyn Sequence + Send>, u32)>,
 	pub drop_to_break: Vec<(Box<dyn Sequence + Send>, u32)>,
+	pub highpass_to_drop: Vec<(Box<dyn Sequence + Send>, u32)>,
+	pub drop_to_highpass: Vec<(Box<dyn Sequence + Send>, u32)>,
 }
 
 impl Pattern {
@@ -21,6 +23,8 @@ impl Pattern {
 			Stage::Breakbeat => &mut self.s_breakbeat[seq_id],
 			Stage::BreakToDrop => &mut self.break_to_drop[seq_id].0,
 			Stage::DropToBreak => &mut self.drop_to_break[seq_id].0,
+			Stage::HighPassToDrop => &mut self.highpass_to_drop[seq_id].0,
+			Stage::DropToHighPass => &mut self.drop_to_highpass[seq_id].0,
 		}
 	}
 

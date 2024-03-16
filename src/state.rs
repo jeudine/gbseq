@@ -12,6 +12,8 @@ pub enum Stage {
 	Breakbeat,
 	BreakToDrop,
 	DropToBreak,
+	HighPassToDrop,
+	DropToHighPass,
 }
 
 #[derive(Default)]
@@ -87,6 +89,8 @@ impl State {
 		match stage {
 			Stage::BreakToDrop => Stage::Drop,
 			Stage::DropToBreak => Stage::Break,
+			Stage::HighPassToDrop => Stage::Drop,
+			Stage::DropToHighPass => Stage::HighPass,
 			_ => unreachable!(),
 		}
 	}
@@ -95,6 +99,8 @@ impl State {
 		match self.stage {
 			Stage::BreakToDrop => true,
 			Stage::DropToBreak => true,
+			Stage::HighPassToDrop => true,
+			Stage::DropToHighPass => true,
 			_ => false,
 		}
 	}
@@ -110,13 +116,13 @@ impl State {
 			},
 			Stage::Drop => match stage {
 				Stage::Break => self.next_stage = Stage::DropToBreak,
-				Stage::HighPass => {}
+				Stage::HighPass => self.next_stage = Stage::DropToHighPass,
 				Stage::Breakbeat => {}
 				_ => {}
 			},
 			Stage::HighPass => match stage {
 				Stage::Break => {}
-				Stage::Drop => {}
+				Stage::Drop => self.next_stage = Stage::HighPassToDrop,
 				Stage::HighPass => {}
 				Stage::Breakbeat => {}
 				_ => {}
