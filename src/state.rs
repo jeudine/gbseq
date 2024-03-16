@@ -23,12 +23,10 @@ pub struct State {
 	next_stage: Stage,
 	cur_seq_id: usize,
 	transition_end_step: u32,
-	pub oh: bool,
-	pub ch: bool,
+	oh: bool,
+	ch: bool,
 	pub oh_toggle: bool,
 	pub ch_toggle: bool,
-	pub oh_lfo: LFO,
-	pub ch_lfo: LFO,
 }
 
 impl State {
@@ -42,9 +40,9 @@ impl State {
 		&mut self,
 		step: u32,
 		rng: &mut ThreadRng,
-	) -> &mut Box<dyn Sequence + Send> {
-		// Enter in a transition
+	) -> (&mut Box<dyn Sequence + Send>, bool, bool, u8) {
 		if step % 96 == 0 {
+			// Enter in a transition
 			if self.next_stage != self.stage {
 				self.stage = self.next_stage;
 				self.transition_end_step = self.patterns[self.cur_pattern_id]
@@ -54,18 +52,10 @@ impl State {
 				if self.oh_toggle {
 					self.oh = !self.oh;
 					self.oh_toggle = false;
-					if self.oh {
-						self.oh_lfo
-							.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
-					}
 				}
 				if self.ch_toggle {
 					self.ch = !self.ch;
 					self.ch_toggle = false;
-					if self.ch {
-						self.ch_lfo
-							.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
-					}
 				}
 			}
 		}
@@ -77,24 +67,20 @@ impl State {
 			if self.oh_toggle {
 				self.oh = !self.oh;
 				self.oh_toggle = false;
-				if self.oh {
-					self.oh_lfo
-						.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
-				}
 			}
 			if self.ch_toggle {
 				self.ch = !self.ch;
 				self.ch_toggle = false;
-				if self.ch {
-					self.ch_lfo
-						.set_rng(&(vec![1.0, 2.0, 4.0])[..], 0.2..0.4, rng);
-				}
 			}
 		}
 
 		//TODO: add debug mode
 		//println!("{}: {:?}", step, self.stage);
-		self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage)
+		let root = self.get_cur_root();
+		let sequence =
+			self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage);
+
+		(sequence, self.ch, self.oh, root)
 	}
 
 	fn get_next_stage(stage: &Stage) -> Stage {
@@ -144,5 +130,9 @@ impl State {
 			},
 			_ => {}
 		}
+	}
+
+	fn get_cur_root(&self) -> u8 {
+		self.patterns[self.cur_pattern_id].root.get_midi()
 	}
 }

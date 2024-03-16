@@ -32,8 +32,7 @@ pub trait Sequence {
 		rng: &mut ThreadRng,
 		oh: bool,
 		ch: bool,
-		oh_lfo: &LFO,
-		ch_lfo: &LFO,
+		root: u8,
 	);
 }
 

@@ -69,8 +69,8 @@ impl Action {
 				'2' => action.stage = Some(Stage::Drop),
 				'3' => action.stage = Some(Stage::HighPass),
 				'4' => action.stage = Some(Stage::Breakbeat),
-				'5' => action.oh_toggle = true,
-				'6' => action.ch_toggle = true,
+				'5' => action.ch_toggle = true,
+				'6' => action.oh_toggle = true,
 				_ => {}
 			}
 		}

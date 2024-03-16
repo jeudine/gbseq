@@ -18,14 +18,13 @@ impl Sequence for Break0 {
 		rng: &mut ThreadRng,
 		oh: bool,
 		ch: bool,
-		oh_lfo: &LFO,
-		ch_lfo: &LFO,
+		root: u8,
 	) {
 		if oh {
-			self.hh.trigger_oh(step, conn, channel_id, rng, oh_lfo);
+			self.hh.trigger_oh(step, conn, root, rng);
 		}
 		if ch {
-			self.hh.trigger_ch(step, conn, channel_id, ch_lfo);
+			self.hh.trigger_ch(step, conn, root);
 		}
 	}
 }

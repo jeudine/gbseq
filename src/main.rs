@@ -4,6 +4,7 @@ mod mbreak;
 use drop::Drop0;
 use mbreak::Break0;
 use tseq::sequence::Sequence;
+use tseq::Note;
 use tseq::{run, Pattern};
 
 fn main() {
@@ -11,9 +12,9 @@ fn main() {
 	let drop0 = Drop0::default();
 
 	//let patterns = [155, 156, 158, 160, 162, 164, 166, 168]
-	let patterns = [164]
+	let patterns = [(155, Note::C)]
 		.iter()
-		.map(|bpm| {
+		.map(|(bpm, root)| {
 			let s_break: Vec<Box<dyn Sequence + Send>> = vec![Box::new(break0)];
 			let s_drop: Vec<Box<dyn Sequence + Send>> = vec![Box::new(drop0)];
 			let s_high_pass: Vec<Box<dyn Sequence + Send>> = vec![Box::new(break0)];
@@ -28,6 +29,7 @@ fn main() {
 				s_breakbeat,
 				break_to_drop,
 				drop_to_break,
+				root: *root,
 			}
 		})
 		.collect();
