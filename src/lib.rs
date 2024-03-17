@@ -6,6 +6,7 @@ pub use pattern::Note;
 pub use pattern::Pattern;
 use promptly::{prompt, prompt_default, ReadlineError};
 use state::State;
+pub use state::Transition;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::spawn;
 use thiserror::Error;

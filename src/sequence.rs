@@ -1,3 +1,4 @@
+use crate::state::Transition;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
@@ -33,6 +34,7 @@ pub trait Sequence {
 		oh: bool,
 		ch: bool,
 		root: u8,
+		transition: Transition,
 	);
 }
 

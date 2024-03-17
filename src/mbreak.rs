@@ -1,8 +1,8 @@
 use crate::hh::HH;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
-use tseq::log_send;
 use tseq::sequence::{end_note, param_value, start_note, Sequence, LFO, SP2, SP3};
+use tseq::{log_send, Transition};
 
 #[derive(Copy, Clone, Default)]
 pub struct Break0 {
@@ -19,6 +19,7 @@ impl Sequence for Break0 {
 		oh: bool,
 		ch: bool,
 		root: u8,
+		transition: Transition,
 	) {
 		if oh {
 			self.hh.trigger_oh(step, conn, root, rng);
