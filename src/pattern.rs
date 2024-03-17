@@ -32,6 +32,8 @@ impl Pattern {
 		match stage {
 			Stage::BreakToDrop => self.break_to_drop[seq_id].1,
 			Stage::DropToBreak => self.drop_to_break[seq_id].1,
+			Stage::HighPassToDrop => self.highpass_to_drop[seq_id].1,
+			Stage::DropToHighPass => self.drop_to_highpass[seq_id].1,
 			_ => unreachable!(),
 		}
 	}
