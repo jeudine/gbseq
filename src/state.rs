@@ -48,9 +48,11 @@ impl State {
 		rng: &mut ThreadRng,
 	) -> (&mut Box<dyn Sequence + Send>, Transition, bool, bool, u8) {
 		if step % 96 == 0 {
-			if self.next_stage != self.stage && self.transition == Transition::No {
+			if self.next_stage != self.stage
+				&& (self.transition == Transition::No || self.transition == Transition::In)
+			{
 				self.transition = Transition::Out;
-			} else if self.next_stage != self.stage && self.transition == Transition::Out {
+			} else if self.transition == Transition::Out {
 				self.transition = Transition::In;
 				self.stage = self.next_stage;
 				if self.oh_toggle {
