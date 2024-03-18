@@ -16,8 +16,23 @@ pub enum Stage {
 pub enum Transition {
 	#[default]
 	No,
-	In,
-	Out,
+	In(Stage),
+	Out(Stage),
+}
+
+impl Transition {
+	pub fn is_transition_in(&self) -> bool {
+		if let Transition::In(_) = self {
+			return true;
+		}
+		false
+	}
+	pub fn is_transition_out(&self) -> bool {
+		if let Transition::Out(_) = self {
+			return true;
+		}
+		false
+	}
 }
 
 #[derive(Default)]
@@ -49,11 +64,11 @@ impl State {
 	) -> (&mut Box<dyn Sequence + Send>, Transition, bool, bool, u8) {
 		if step % 96 == 0 {
 			if self.next_stage != self.stage
-				&& (self.transition == Transition::No || self.transition == Transition::In)
+				&& (self.transition == Transition::No || self.transition.is_transition_in())
 			{
-				self.transition = Transition::Out;
-			} else if self.transition == Transition::Out {
-				self.transition = Transition::In;
+				self.transition = Transition::Out(self.next_stage);
+			} else if self.transition.is_transition_out() {
+				self.transition = Transition::In(self.stage);
 				self.stage = self.next_stage;
 				if self.oh_toggle {
 					self.oh = !self.oh;
@@ -63,7 +78,7 @@ impl State {
 					self.ch = !self.ch;
 					self.ch_toggle = false;
 				}
-			} else if self.next_stage == self.stage && self.transition == Transition::In {
+			} else if self.next_stage == self.stage && self.transition.is_transition_in() {
 				self.transition = Transition::No;
 			} else if self.next_stage == self.stage && self.transition == Transition::No {
 				if self.oh_toggle {

@@ -5,6 +5,7 @@ use rand::Rng;
 use tseq::sequence::{
 	control_change, end_note, param_value, start_note, Sequence, CC_SP1_LAYER, LFO, SP1,
 };
+use tseq::Stage;
 use tseq::{log_send, Transition};
 
 const SKIPPED_PROBA: f64 = 0.2;
@@ -34,7 +35,7 @@ impl Sequence for Drop0 {
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
 		}
 
-		if transition == Transition::In {
+		if transition.is_transition_in() {
 			if t == 12 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
@@ -94,15 +95,7 @@ impl Sequence for HighPass0 {
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
 		}
 
-		if transition == Transition::In || transition == Transition::No {
-			if t == 0 || t == 24 || t == 48 {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
-			} else if t == 12 && rng.gen_bool(DOUBLED_PROBA) {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
-			} else if t == 72 && !rng.gen_bool(SKIPPED_PROBA) {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
-			}
-		} else {
+		if let Transition::Out(Stage::Drop) = transition {
 			if t == 0 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
 			} else if t == 24 {
@@ -112,6 +105,24 @@ impl Sequence for HighPass0 {
 			} else if t == 84 {
 				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
+		} else if let Transition::Out(Stage::Break) = transition {
+			if t == 0 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+			} else if t == 24 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.7)));
+			} else if t == 48 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.8)));
+			} else if t == 72 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.9)));
+			}
+		} else {
+			if t == 0 || t == 24 || t == 48 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+			} else if t == 12 && rng.gen_bool(DOUBLED_PROBA) {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+			} else if t == 72 && !rng.gen_bool(SKIPPED_PROBA) {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
 			}
 		}
 
