@@ -10,11 +10,14 @@ use tseq::{log_send, Transition};
 
 const SKIPPED_PROBA: f64 = 0.2;
 const DOUBLED_PROBA: f64 = 0.2;
+const CH_TOGGLE: f64 = 0.5;
 
 #[derive(Copy, Clone, Default)]
 pub struct Drop0 {
 	hh: HH,
 	skipped: bool,
+	ch_prev: bool,
+	ch_toggle: bool,
 }
 
 impl Sequence for Drop0 {
@@ -33,6 +36,12 @@ impl Sequence for Drop0 {
 
 		if t == 0 {
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
+			if (!self.ch_prev) && ch && transition == Transition::No {
+				self.ch_toggle = rng.gen_bool(CH_TOGGLE);
+			} else {
+				self.ch_toggle = false;
+			}
+			self.ch_prev = ch;
 		}
 
 		if transition.is_transition_in() {
@@ -41,32 +50,45 @@ impl Sequence for Drop0 {
 			}
 		}
 
-		if t == 0 || t == 24 || t == 48 {
-			log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
-		}
-
-		if t == 12 && rng.gen_bool(DOUBLED_PROBA) {
-			log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
-		}
-
-		if t == 72 {
-			if !rng.gen_bool(SKIPPED_PROBA) {
+		if self.ch_toggle {
+			if t == 0 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+			} else if t == 24 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.5)));
+			} else if t == 48 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
+			} else if t == 84 {
+				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
-				self.skipped = false;
-			} else {
-				self.skipped = true;
 			}
-		}
+		} else {
+			if t == 0 || t == 24 || t == 48 {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
 
-		if t == 84 && self.skipped {
-			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
-			log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			if t == 12 && rng.gen_bool(DOUBLED_PROBA) {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
+
+			if t == 72 {
+				if !rng.gen_bool(SKIPPED_PROBA) {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+					self.skipped = false;
+				} else {
+					self.skipped = true;
+				}
+			}
+
+			if t == 84 && self.skipped {
+				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
 		}
 
 		if oh {
 			self.hh.trigger_oh(step, conn, root, rng);
 		}
-		if ch {
+		if ch && !self.ch_toggle {
 			self.hh.trigger_ch(step, conn, root);
 		}
 	}
