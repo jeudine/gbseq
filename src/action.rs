@@ -1,11 +1,8 @@
-use crate::state::{Stage, State};
+use crate::state::{SelPatt, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
 use std::default::Default;
-use std::mem::drop;
 use std::sync::{Arc, Condvar, Mutex};
-use std::thread::sleep;
-use std::time::Duration;
 
 enum System {
 	StartStop,
@@ -18,6 +15,7 @@ struct Action {
 	stage: Option<Stage>,
 	ch_toggle: bool,
 	oh_toggle: bool,
+	pattern: Option<SelPatt>,
 }
 
 pub fn handle(
@@ -54,6 +52,7 @@ pub fn handle(
 
 	state.oh_toggle = action.oh_toggle;
 	state.ch_toggle = action.ch_toggle;
+	state.sel_patt = action.pattern;
 
 	false
 }
@@ -71,6 +70,8 @@ impl Action {
 				'4' => action.stage = Some(Stage::Breakbeat),
 				'5' => action.ch_toggle = true,
 				'6' => action.oh_toggle = true,
+				'7' => action.pattern = Some(SelPatt::Prev),
+				'8' => action.pattern = Some(SelPatt::Next),
 				_ => {}
 			}
 		}

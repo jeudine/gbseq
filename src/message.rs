@@ -1,5 +1,7 @@
+use crate::clock;
 use crate::log_send;
-use crate::state::State;
+use crate::sequence::control_change;
+use crate::state::{SelPatt, State};
 use crate::Channel;
 use std::sync::{Arc, Condvar, Mutex};
 
@@ -29,7 +31,21 @@ pub fn messages_gen(
 			log_send(&mut channel.conn, &[START]);
 		}
 
-		let (sequence, transition, ch, oh, root) = state.get_cur_sequence(channel.step, &mut rng);
+		let (sequence, transition, ch, oh, root, sel_patt) =
+			state.get_cur_sequence(channel.step, &mut rng);
+
+		if let Some(s) = sel_patt {
+			// New bpm
+			let period = clock::compute_period_us(s.1);
+			channel.period_us = period;
+
+			// Send message to select next kit
+			let message = match s.0 {
+				SelPatt::Prev => control_change(channel_id, 100, 0),
+				SelPatt::Next => control_change(channel_id, 101, 0),
+			};
+			log_send(&mut channel.conn, &message);
+		}
 
 		sequence.run(
 			channel.step,

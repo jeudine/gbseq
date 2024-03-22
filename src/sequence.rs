@@ -60,6 +60,10 @@ pub fn control_change(channel_id: u8, parameter: u8, value: u8) -> Vec<u8> {
 	vec![CC | channel_id, parameter, value]
 }
 
+pub fn control_change_no_val(channel_id: u8, parameter: u8) -> Vec<u8> {
+	vec![CC | channel_id, parameter]
+}
+
 pub fn param_value(v: f32) -> u8 {
 	if v < -1.0 {
 		return 0;

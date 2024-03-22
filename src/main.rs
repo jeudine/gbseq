@@ -16,7 +16,7 @@ fn main() {
 	let breakbeat0 = Breakbeat0::default();
 
 	//let patterns = [155, 156, 158, 160, 162, 164, 166, 168]
-	let patterns = [(155, Note::C)]
+	let patterns = [(155, Note::C), (156, Note::F)]
 		.iter()
 		.map(|(bpm, root)| {
 			let s_break: Vec<Box<dyn Sequence + Send>> = vec![Box::new(break0)];

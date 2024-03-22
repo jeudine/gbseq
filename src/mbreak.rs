@@ -23,6 +23,9 @@ impl Sequence for Break0 {
 	) {
 		let t = step % 96;
 
+		if t == 0 {
+			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
+		}
 		if let Transition::Out(Stage::Drop) = transition {
 			if t == 0 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
