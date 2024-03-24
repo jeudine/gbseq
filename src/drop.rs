@@ -23,7 +23,8 @@ impl Distribution<HHToggle> for Standard {
 	fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> HHToggle {
 		match rng.gen_range(0..=1) {
 			0 => HHToggle::BarToggle,
-			_ => HHToggle::FastToggle,
+			1 => HHToggle::FastToggle,
+			_ => unreachable!(),
 		}
 	}
 }
