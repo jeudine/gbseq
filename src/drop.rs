@@ -6,7 +6,8 @@ use rand::{
 	Rng,
 };
 use tseq::sequence::{
-	control_change, end_note, param_value, start_note, Sequence, CC_SP1_LAYER, LFO, SP1,
+	control_change, end_note, param_value, start_note, Sequence, CC_SP1_LAYER, CC_SP1_LENGTH, LFO,
+	SP1,
 };
 use tseq::Stage;
 use tseq::{log_send, Transition};
@@ -160,6 +161,7 @@ impl Sequence for HighPass0 {
 		let t = step % 96;
 
 		if t == 0 {
+			log_send(conn, &control_change(channel_id, CC_SP1_LENGTH, 127));
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
 		}
 

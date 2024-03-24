@@ -1,7 +1,9 @@
 use crate::hh::HH;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
-use tseq::sequence::{control_change, param_value, start_note, Sequence, CC_SP1_LAYER, SP1};
+use tseq::sequence::{
+	control_change, param_value, start_note, Sequence, CC_SP1_LAYER, CC_SP1_LENGTH, SP1,
+};
 use tseq::{log_send, Stage, Transition};
 
 #[derive(Copy, Clone, Default)]
@@ -25,6 +27,7 @@ impl Sequence for Break0 {
 
 		if t == 0 {
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
+			log_send(conn, &control_change(channel_id, CC_SP1_LENGTH, 127));
 		}
 		if let Transition::Out(Stage::Drop) = transition {
 			if t == 0 {
