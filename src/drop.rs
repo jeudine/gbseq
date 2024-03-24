@@ -1,7 +1,10 @@
 use crate::hh::HH;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
-use rand::Rng;
+use rand::{
+	distributions::{Distribution, Standard},
+	Rng,
+};
 use tseq::sequence::{
 	control_change, end_note, param_value, start_note, Sequence, CC_SP1_LAYER, LFO, SP1,
 };
@@ -10,14 +13,30 @@ use tseq::{log_send, Transition};
 
 const SKIPPED_PROBA: f64 = 0.2;
 const DOUBLED_PROBA: f64 = 0.2;
-const CH_TOGGLE: f64 = 0.5;
+
+#[derive(Copy, Clone, PartialEq)]
+enum HHToggle {
+	BarToggle,
+	FastToggle,
+}
+impl Distribution<HHToggle> for Standard {
+	fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> HHToggle {
+		match rng.gen_range(0..=1) {
+			0 => HHToggle::BarToggle,
+			_ => HHToggle::FastToggle,
+		}
+	}
+}
 
 #[derive(Copy, Clone, Default)]
 pub struct Drop0 {
 	hh: HH,
 	skipped: bool,
 	ch_prev: bool,
+	oh_prev: bool,
+	hh_toggle: Option<HHToggle>,
 	ch_toggle: bool,
+	oh_toggle: bool,
 }
 
 impl Sequence for Drop0 {
@@ -36,12 +55,24 @@ impl Sequence for Drop0 {
 
 		if t == 0 {
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
-			if (!self.ch_prev) && ch && transition == Transition::No {
-				self.ch_toggle = rng.gen_bool(CH_TOGGLE);
-			} else {
-				self.ch_toggle = false;
+			self.ch_toggle = false;
+			self.oh_toggle = false;
+			self.hh_toggle = None;
+			if transition == Transition::No {
+				if !self.ch_prev && ch {
+					self.hh_toggle = Some(rng.gen());
+					self.ch_toggle = true;
+				} else if !self.oh_prev && oh {
+					self.hh_toggle = Some(HHToggle::FastToggle);
+					self.oh_toggle = true;
+				} else if (!oh && self.oh_prev) || (!ch && self.ch_prev) {
+					self.hh_toggle = Some(HHToggle::BarToggle);
+					self.oh_toggle = !oh && self.oh_prev;
+					self.ch_toggle = !ch && self.ch_prev;
+				}
+				self.ch_prev = ch;
+				self.oh_prev = oh;
 			}
-			self.ch_prev = ch;
 		}
 
 		if transition.is_transition_in() {
@@ -50,16 +81,26 @@ impl Sequence for Drop0 {
 			}
 		}
 
-		if self.ch_toggle {
-			if t == 0 {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
-			} else if t == 24 {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.5)));
-			} else if t == 48 {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
-			} else if t == 84 {
-				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+		if let Some(h) = self.hh_toggle {
+			if h == HHToggle::BarToggle {
+				if t == 0 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+				} else if t == 24 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.5)));
+				} else if t == 48 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
+				} else if t == 84 {
+					log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+				}
+			} else {
+				if t == 0 || t == 24 || t == 48 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+				}
+				if t == 84 {
+					log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+				}
 			}
 		} else {
 			if t == 0 || t == 24 || t == 48 {
@@ -85,11 +126,15 @@ impl Sequence for Drop0 {
 			}
 		}
 
-		if oh {
-			self.hh.trigger_oh(step, conn, root, rng);
+		if oh ^ self.oh_toggle {
+			if t < 72 || !self.oh_toggle {
+				self.hh.trigger_oh(step, conn, root, rng);
+			}
 		}
-		if ch && !self.ch_toggle {
-			self.hh.trigger_ch(step, conn, root);
+		if ch ^ self.ch_toggle {
+			if t < 72 || !self.ch_toggle {
+				self.hh.trigger_ch(step, conn, root);
+			}
 		}
 	}
 }
