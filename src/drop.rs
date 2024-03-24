@@ -70,9 +70,9 @@ impl Sequence for Drop0 {
 					self.oh_toggle = !oh && self.oh_prev;
 					self.ch_toggle = !ch && self.ch_prev;
 				}
-				self.ch_prev = ch;
-				self.oh_prev = oh;
 			}
+			self.ch_prev = ch;
+			self.oh_prev = oh;
 		}
 
 		if transition.is_transition_in() {
@@ -162,6 +162,8 @@ impl Sequence for HighPass0 {
 			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
 		}
 
+		let mut no_hh = false;
+
 		if let Transition::Out(Stage::Drop) = transition {
 			if t == 0 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
@@ -172,6 +174,9 @@ impl Sequence for HighPass0 {
 			} else if t == 84 {
 				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
+			if t >= 72 {
+				no_hh = true;
 			}
 		} else if let Transition::Out(Stage::Break) = transition {
 			if t == 0 {
@@ -193,10 +198,10 @@ impl Sequence for HighPass0 {
 			}
 		}
 
-		if oh {
+		if oh && !no_hh {
 			self.hh.trigger_oh(step, conn, root, rng);
 		}
-		if ch {
+		if ch && !no_hh {
 			self.hh.trigger_ch(step, conn, root);
 		}
 	}
