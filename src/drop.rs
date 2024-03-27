@@ -6,8 +6,8 @@ use rand::{
 	Rng,
 };
 use tseq::sequence::{
-	control_change, end_note, param_value, start_note, Sequence, CC_SP1_LAYER, CC_SP1_LENGTH, LFO,
-	SP1,
+	cc_parameter, control_change, end_note, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH,
+	LFO, SP1,
 };
 use tseq::Stage;
 use tseq::{log_send, Transition};
@@ -56,7 +56,10 @@ impl Sequence for Drop0 {
 		let t = step % 96;
 
 		if t == 0 {
-			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LAYER, 0), 0),
+			);
 			self.ch_toggle = false;
 			self.oh_toggle = false;
 			self.hh_toggle = None;
@@ -78,6 +81,12 @@ impl Sequence for Drop0 {
 		}
 
 		if transition.is_transition_in() {
+			if t == 0 {
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LENGTH, 0), 127),
+				);
+			}
 			if t == 12 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
@@ -92,7 +101,10 @@ impl Sequence for Drop0 {
 				} else if t == 48 {
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
 				} else if t == 84 {
-					log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+					log_send(
+						conn,
+						&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+					);
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 				}
 			} else {
@@ -100,7 +112,10 @@ impl Sequence for Drop0 {
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 				}
 				if t == 84 {
-					log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+					log_send(
+						conn,
+						&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+					);
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 				}
 			}
@@ -123,7 +138,10 @@ impl Sequence for Drop0 {
 			}
 
 			if t == 84 && self.skipped {
-				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+				);
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
 		}
@@ -161,8 +179,16 @@ impl Sequence for HighPass0 {
 		let t = step % 96;
 
 		if t == 0 {
-			log_send(conn, &control_change(channel_id, CC_SP1_LENGTH, 127));
-			log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 0));
+			if transition.is_transition_in() {
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LENGTH, 0), 127),
+				);
+			}
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LAYER, 0), 0),
+			);
 		}
 
 		let mut no_hh = false;
@@ -175,7 +201,11 @@ impl Sequence for HighPass0 {
 			} else if t == 48 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
 			} else if t == 84 {
-				log_send(conn, &control_change(channel_id, CC_SP1_LAYER, 1 << 6));
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+				);
+
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
 			if t >= 72 {

@@ -3,9 +3,8 @@ use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use tseq::sequence::{
-	cc_parameter, control_change, end_note, param_value, start_note, Sequence, CC_FREEZE,
-	CC_SP1_LAYER, CC_SP1_LENGTH, CC_SP2_LAYER, CC_SP2_LENGTH, CC_SP3_LAYER, CC_SP3_LENGTH,
-	CC_SP4_LAYER, CC_SP4_LENGTH, LFO, SP1, SP2, SP3, SP4,
+	cc_parameter, control_change, param_value, start_note, Sequence, CC_FREEZE, CC_LAYER,
+	CC_LENGTH, LFO, SP1, SP2, SP3, SP4,
 };
 use tseq::Stage;
 use tseq::{log_send, Transition};
@@ -15,7 +14,6 @@ const FREEZE_PROBA: f64 = 0.7;
 
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const LAYER_ARRAY: [u8; 3] = [0x00, 0x40, 0x60];
-const CC_LAYER_ARRAY: [u8; 3] = [CC_SP2_LAYER, CC_SP3_LAYER, CC_SP4_LAYER];
 
 #[derive(Copy, Clone, Default)]
 struct Trig {
@@ -56,10 +54,35 @@ impl Sequence for Breakbeat0 {
 					None
 				}
 			}
-			log_send(conn, &control_change(channel_id, CC_SP1_LENGTH, 31));
-			log_send(conn, &control_change(channel_id, CC_SP2_LENGTH, 31));
-			log_send(conn, &control_change(channel_id, CC_SP3_LENGTH, 31));
-			log_send(conn, &control_change(channel_id, CC_SP3_LENGTH, 31));
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LAYER, 0), 0),
+			);
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LENGTH, 0), 63),
+			);
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LENGTH, 1), 31),
+			);
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LENGTH, 2), 31),
+			);
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LENGTH, 3), 31),
+			);
+		}
+
+		if t == 95 && transition.is_transition_out() {
+			self.frozen.inspect(|f| {
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_FREEZE, f.0), 63),
+				)
+			});
 		}
 
 		if t == 0 || t == 36 {
@@ -74,10 +97,11 @@ impl Sequence for Breakbeat0 {
 						&control_change(channel_id, cc_parameter(CC_FREEZE, f.0), 63),
 					);
 				}
+				self.frozen = None;
 			}
 
-			if rng.gen_bool(FREEZE_PROBA) {
-				let sp = rng.gen_range(0..3);
+			if self.frozen.is_none() && rng.gen_bool(FREEZE_PROBA) {
+				let sp = rng.gen_range(1..=3);
 				let val = rng.gen_range(0..=127);
 				let t = rng.gen_range(1..=3);
 
@@ -94,7 +118,7 @@ impl Sequence for Breakbeat0 {
 					conn,
 					&control_change(
 						channel_id,
-						CC_LAYER_ARRAY[t.sp as usize],
+						cc_parameter(CC_LAYER, t.sp + 1),
 						LAYER_ARRAY[t.layer as usize],
 					),
 				);
@@ -103,6 +127,10 @@ impl Sequence for Breakbeat0 {
 					&start_note(channel_id, SP_ARRAY[t.sp as usize], param_value(0.0)),
 				);
 			}
+		}
+
+		if ch {
+			self.hh.trigger_ch_dnb(step, conn, root);
 		}
 	}
 }

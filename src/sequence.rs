@@ -47,21 +47,11 @@ pub const NOTE_OFF: u8 = 0x80;
 pub const CC: u8 = 0xB0;
 
 pub const CC_FREEZE: u8 = 3;
-
-//TODO: do the same way as freeze
-pub const CC_SP1_LAYER: u8 = 19;
-pub const CC_SP2_LAYER: u8 = 29;
-pub const CC_SP3_LAYER: u8 = 39;
-pub const CC_SP4_LAYER: u8 = 49;
-
-//TODO: do the same way as freeze
-pub const CC_SP1_LENGTH: u8 = 15;
-pub const CC_SP2_LENGTH: u8 = 25;
-pub const CC_SP3_LENGTH: u8 = 35;
-pub const CC_SP4_LENGTH: u8 = 45;
+pub const CC_LAYER: u8 = 9;
+pub const CC_LENGTH: u8 = 5;
 
 pub fn cc_parameter(parameter: u8, sp: u8) -> u8 {
-	parameter + 10 * (sp + 2)
+	parameter + 10 * (sp + 1)
 }
 
 pub fn start_note(channel_id: u8, note: u8, velocity: u8) -> Vec<u8> {
