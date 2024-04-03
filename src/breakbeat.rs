@@ -86,7 +86,26 @@ impl Sequence for Breakbeat0 {
 		}
 
 		if t == 0 || t == 36 {
-			log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			if let Transition::Out(Stage::Drop) = transition {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+			} else {
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
+		}
+
+		if let Transition::Out(Stage::Drop) = transition {
+			if t == 84 {
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LENGTH, 0), 127),
+				);
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+				);
+
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			}
 		}
 
 		if t % 6 == 0 {
@@ -122,10 +141,21 @@ impl Sequence for Breakbeat0 {
 						LAYER_ARRAY[t.layer as usize],
 					),
 				);
-				log_send(
-					conn,
-					&start_note(channel_id, SP_ARRAY[t.sp as usize], param_value(0.0)),
-				);
+				if let Transition::Out(Stage::Drop) = transition {
+					log_send(
+						conn,
+						&start_note(
+							channel_id,
+							SP_ARRAY[t.sp as usize],
+							param_value(i as f32 / 12.0),
+						),
+					);
+				} else {
+					log_send(
+						conn,
+						&start_note(channel_id, SP_ARRAY[t.sp as usize], param_value(0.0)),
+					);
+				}
 			}
 		}
 
