@@ -67,6 +67,9 @@ impl Sequence for Drop0 {
 				if !self.ch_prev && ch {
 					self.hh_toggle = Some(rng.gen());
 					self.ch_toggle = true;
+					if !self.oh_prev && oh {
+						self.oh_toggle = true;
+					}
 				} else if !self.oh_prev && oh {
 					self.hh_toggle = Some(HHToggle::FastToggle);
 					self.oh_toggle = true;
