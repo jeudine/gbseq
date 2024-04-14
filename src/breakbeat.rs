@@ -4,7 +4,7 @@ use rand::rngs::ThreadRng;
 use rand::Rng;
 use tseq::sequence::{
 	cc_parameter, control_change, param_value, start_note, Sequence, CC_FREEZE, CC_LAYER,
-	CC_LENGTH, LFO, SP1, SP2, SP3, SP4,
+	CC_LENGTH, CC_LEVEL, LFO, SP1, SP2, SP3, SP4,
 };
 use tseq::Stage;
 use tseq::{log_send, Transition};
@@ -44,6 +44,10 @@ impl Sequence for Breakbeat0 {
 		let t = step % 96;
 
 		if t == 0 && transition.is_transition_in() {
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 90),
+			);
 			for i in 0..16 {
 				self.trigs[i] = if rng.gen_bool(TRIG_PROBA) {
 					let sp = rng.gen_range(0..3);
@@ -87,7 +91,7 @@ impl Sequence for Breakbeat0 {
 
 		if t == 0 || t == 36 {
 			if let Transition::Out(Stage::Drop) = transition {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+				log_send(conn, &start_note(channel_id, SP1, param_value(0.3)));
 			} else {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
@@ -103,12 +107,16 @@ impl Sequence for Breakbeat0 {
 					conn,
 					&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
 				);
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
+				);
 
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
 		}
 
-		if t % 6 == 0 {
+		if t % 6 == 0 && !Self::no_perc(transition, t) {
 			if let Some(f) = self.frozen {
 				if f.1 >= step {
 					log_send(
@@ -162,5 +170,16 @@ impl Sequence for Breakbeat0 {
 		if ch {
 			self.hh.trigger_ch_dnb(step, conn, root);
 		}
+	}
+}
+
+impl Breakbeat0 {
+	fn no_perc(transition: Transition, t: u32) -> bool {
+		if let Transition::Out(Stage::Drop) = transition {
+			if t >= 72 {
+				return true;
+			}
+		}
+		false
 	}
 }

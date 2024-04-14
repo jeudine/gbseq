@@ -55,4 +55,21 @@ impl Note {
 			Note::B => 59,
 		}
 	}
+
+	pub fn get_str(&self) -> &str {
+		match self {
+			Note::C => "C",
+			Note::CS => "C#",
+			Note::D => "D",
+			Note::DS => "D#",
+			Note::E => "E",
+			Note::F => "F",
+			Note::FS => "F#",
+			Note::G => "G",
+			Note::GS => "G#",
+			Note::A => "A",
+			Note::AS => "A#",
+			Note::B => "B",
+		}
+	}
 }

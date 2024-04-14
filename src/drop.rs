@@ -7,7 +7,7 @@ use rand::{
 };
 use tseq::sequence::{
 	cc_parameter, control_change, end_note, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH,
-	LFO, SP1,
+	CC_LEVEL, LFO, SP1,
 };
 use tseq::Stage;
 use tseq::{log_send, Transition};
@@ -88,6 +88,10 @@ impl Sequence for Drop0 {
 				log_send(
 					conn,
 					&control_change(channel_id, cc_parameter(CC_LENGTH, 0), 127),
+				);
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
 				);
 			}
 			if t == 12 {
@@ -194,6 +198,10 @@ impl Sequence for HighPass0 {
 				conn,
 				&control_change(channel_id, cc_parameter(CC_LAYER, 0), 0),
 			);
+			log_send(
+				conn,
+				&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 90),
+			);
 		}
 
 		let mut no_hh = false;
@@ -209,6 +217,10 @@ impl Sequence for HighPass0 {
 				log_send(
 					conn,
 					&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+				);
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
 				);
 
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
@@ -227,6 +239,10 @@ impl Sequence for HighPass0 {
 				log_send(
 					conn,
 					&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+				);
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
 				);
 
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));

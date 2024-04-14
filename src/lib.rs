@@ -75,6 +75,8 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
+	let mut note = patterns[0].root;
+
 	let state = State::new(patterns);
 
 	let state_arc = Arc::new(Mutex::new(state));
@@ -89,8 +91,11 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id - 1));
 
 	loop {
-		let s: String = prompt("Action")?;
-		if handle(&s, &channel_arc, &state_arc) {
+		let s = format!("[{}]", note.get_str());
+		let s: String = prompt(s)?;
+		if let Some(n) = handle(&s, &channel_arc, &state_arc) {
+			note = n;
+		} else {
 			break;
 		}
 	}

@@ -1,4 +1,4 @@
-use crate::pattern::Pattern;
+use crate::pattern::{Note, Pattern};
 use crate::sequence::{Sequence, LFO};
 use rand::rngs::ThreadRng;
 use std::default::Default;
@@ -107,12 +107,13 @@ impl State {
 			}
 
 			if let Some(s) = self.sel_patt {
-				match s {
+				if match s {
 					SelPatt::Prev => self.prev_pattern(),
 					SelPatt::Next => self.next_pattern(),
+				} {
+					let bpm = self.patterns[self.cur_pattern_id].bpm;
+					sel_patt = Some((s, bpm));
 				}
-				let bpm = self.patterns[self.cur_pattern_id].bpm;
-				sel_patt = Some((s, bpm));
 				self.sel_patt = None;
 			}
 		}
@@ -128,23 +129,42 @@ impl State {
 		self.next_stage = *stage;
 	}
 
-	fn prev_pattern(&mut self) {
-		if self.cur_pattern_id == 0 {
-			self.cur_pattern_id = self.patterns.len() - 1;
-		} else {
+	fn prev_pattern(&mut self) -> bool {
+		if self.cur_pattern_id > 0 {
 			self.cur_pattern_id -= 1;
+			return true;
 		}
+		false
 	}
 
-	fn next_pattern(&mut self) {
-		if self.cur_pattern_id == self.patterns.len() - 1 {
-			self.cur_pattern_id = 0;
-		} else {
+	fn next_pattern(&mut self) -> bool {
+		if self.cur_pattern_id < self.patterns.len() - 1 {
 			self.cur_pattern_id += 1;
+			return true;
 		}
+		false
 	}
 
 	fn get_cur_root(&self) -> u8 {
 		self.patterns[self.cur_pattern_id].root.get_midi()
+	}
+
+	pub fn get_root_note(&self) -> Note {
+		let mut i = self.cur_pattern_id;
+		if let Some(p) = self.sel_patt {
+			match p {
+				SelPatt::Prev => {
+					if i > 0 {
+						i -= 1
+					}
+				}
+				SelPatt::Next => {
+					if i < self.patterns.len() - 1 {
+						i += 1
+					}
+				}
+			};
+		}
+		self.patterns[i].root
 	}
 }

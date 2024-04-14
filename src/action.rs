@@ -1,3 +1,4 @@
+use crate::pattern::Note;
 use crate::state::{SelPatt, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
@@ -22,7 +23,7 @@ pub fn handle(
 	s: &String,
 	channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
 	state_arc: &Arc<Mutex<State>>,
-) -> bool {
+) -> Option<Note> {
 	let action = Action::parse(s);
 	let (channel, _) = &**channel_arc;
 	let mut state = state_arc.lock().unwrap();
@@ -37,11 +38,11 @@ pub fn handle(
 				} else {
 					log_send(&mut channel.conn, &[message::STOP]);
 				}
-				return false;
+				return Some(state.get_root_note());
 			}
 			System::Quit => {
 				log_send(&mut channel.conn, &[message::STOP]);
-				return true;
+				return None;
 			}
 		}
 	}
@@ -54,7 +55,7 @@ pub fn handle(
 	state.ch_toggle = action.ch_toggle;
 	state.sel_patt = action.pattern;
 
-	false
+	Some(state.get_root_note())
 }
 
 impl Action {

@@ -47,6 +47,7 @@ pub const NOTE_OFF: u8 = 0x80;
 pub const CC: u8 = 0xB0;
 
 pub const CC_FREEZE: u8 = 3;
+pub const CC_LEVEL: u8 = 8;
 pub const CC_LAYER: u8 = 9;
 pub const CC_LENGTH: u8 = 5;
 
