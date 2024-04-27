@@ -50,6 +50,8 @@ pub const CC_FREEZE: u8 = 3;
 pub const CC_LEVEL: u8 = 8;
 pub const CC_LAYER: u8 = 9;
 pub const CC_LENGTH: u8 = 5;
+pub const CC_KIT_SEL: u8 = 0;
+pub const CC_BANK_SEL: u8 = 99;
 
 pub fn cc_parameter(parameter: u8, sp: u8) -> u8 {
 	parameter + 10 * (sp + 1)
@@ -65,10 +67,6 @@ pub fn end_note(channel_id: u8, note: u8, velocity: u8) -> Vec<u8> {
 
 pub fn control_change(channel_id: u8, parameter: u8, value: u8) -> Vec<u8> {
 	vec![CC | channel_id, parameter, value]
-}
-
-pub fn control_change_no_val(channel_id: u8, parameter: u8) -> Vec<u8> {
-	vec![CC | channel_id, parameter]
 }
 
 pub fn param_value(v: f32) -> u8 {

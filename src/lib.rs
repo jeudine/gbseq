@@ -75,7 +75,7 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
-	let mut note = patterns[0].root;
+	let mut note_bpm = (patterns[0].root, patterns[0].bpm);
 
 	let state = State::new(patterns);
 
@@ -91,10 +91,10 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id - 1));
 
 	loop {
-		let s = format!("[{}]", note.get_str());
+		let s = format!("[{} {}]", note_bpm.0.get_str(), note_bpm.1);
 		let s: String = prompt(s)?;
-		if let Some(n) = handle(&s, &channel_arc, &state_arc) {
-			note = n;
+		if let Some(n_b) = handle(&s, &channel_arc, &state_arc) {
+			note_bpm = n_b;
 		} else {
 			break;
 		}

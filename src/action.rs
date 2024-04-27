@@ -23,7 +23,7 @@ pub fn handle(
 	s: &String,
 	channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
 	state_arc: &Arc<Mutex<State>>,
-) -> Option<Note> {
+) -> Option<(Note, u8)> {
 	let action = Action::parse(s);
 	let (channel, _) = &**channel_arc;
 	let mut state = state_arc.lock().unwrap();
@@ -38,7 +38,7 @@ pub fn handle(
 				} else {
 					log_send(&mut channel.conn, &[message::STOP]);
 				}
-				return Some(state.get_root_note());
+				return Some(state.get_root_note_bpm());
 			}
 			System::Quit => {
 				log_send(&mut channel.conn, &[message::STOP]);
@@ -55,7 +55,7 @@ pub fn handle(
 	state.ch_toggle = action.ch_toggle;
 	state.sel_patt = action.pattern;
 
-	Some(state.get_root_note())
+	Some(state.get_root_note_bpm())
 }
 
 impl Action {

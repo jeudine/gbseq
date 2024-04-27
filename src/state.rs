@@ -149,7 +149,7 @@ impl State {
 		self.patterns[self.cur_pattern_id].root.get_midi()
 	}
 
-	pub fn get_root_note(&self) -> Note {
+	pub fn get_root_note_bpm(&self) -> (Note, u8) {
 		let mut i = self.cur_pattern_id;
 		if let Some(p) = self.sel_patt {
 			match p {
@@ -165,6 +165,6 @@ impl State {
 				}
 			};
 		}
-		self.patterns[i].root
+		(self.patterns[i].root, self.patterns[i].bpm)
 	}
 }

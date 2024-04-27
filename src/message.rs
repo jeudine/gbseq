@@ -1,6 +1,6 @@
 use crate::clock;
 use crate::log_send;
-use crate::sequence::control_change;
+use crate::sequence::{control_change, CC_BANK_SEL, CC_KIT_SEL};
 use crate::state::{SelPatt, State};
 use crate::Channel;
 use std::sync::{Arc, Condvar, Mutex};
@@ -18,10 +18,24 @@ pub fn messages_gen(
 	let (channel, cvar) = &**channel_arc;
 	let mut channel = channel.lock().unwrap();
 	let mut rng = rand::thread_rng();
+	let mut first = true;
 	loop {
 		channel = cvar.wait(channel).unwrap();
 
 		let mut state = state_arc.lock().unwrap();
+
+		if first {
+			log_send(
+				&mut channel.conn,
+				&control_change(channel_id, CC_KIT_SEL, 0),
+			);
+			log_send(
+				&mut channel.conn,
+				&control_change(channel_id, CC_BANK_SEL, 0),
+			);
+
+			first = false;
+		}
 
 		if !state.running {
 			continue;
