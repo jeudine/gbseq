@@ -21,6 +21,8 @@ fn main() {
 		(156, Note::A),
 		(158, Note::C),
 		(160, Note::A),
+		(162, Note::C),
+		(180, Note::A),
 	]
 	.iter()
 	.map(|(bpm, root)| {
