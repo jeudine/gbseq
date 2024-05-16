@@ -13,6 +13,11 @@ pub struct LFO {
 	pub depth: f32,
 }
 
+pub enum Lead {
+	None,
+	Acid,
+}
+
 impl LFO {
 	pub fn get_val(&self, step: u32) -> f32 {
 		self.depth * f32::sin(self.speed * 2.0 * PI * step as f32 / 96.0)
@@ -35,6 +40,7 @@ pub trait Sequence {
 		ch: bool,
 		root: u8,
 		transition: Transition,
+		lead: Lead,
 	);
 }
 

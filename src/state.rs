@@ -1,5 +1,5 @@
 use crate::pattern::{Note, Pattern};
-use crate::sequence::{Sequence, LFO};
+use crate::sequence::{Lead, Sequence, LFO};
 use rand::rngs::ThreadRng;
 use std::default::Default;
 
@@ -75,6 +75,7 @@ impl State {
 		bool,
 		u8,
 		Option<(SelPatt, u8)>,
+		Lead,
 	) {
 		let mut sel_patt: Option<(SelPatt, u8)> = None;
 		if step % 96 == 0 {
@@ -122,7 +123,16 @@ impl State {
 		let sequence =
 			self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage);
 
-		(sequence, self.transition, self.ch, self.oh, root, sel_patt)
+		//TODO
+		(
+			sequence,
+			self.transition,
+			self.ch,
+			self.oh,
+			root,
+			sel_patt,
+			Lead::Acid,
+		)
 	}
 
 	pub fn set_next_stage(&mut self, stage: &Stage) {

@@ -1,6 +1,6 @@
-use crate::log_send;
-use crate::sequence::{end_note, param_value, start_note, Sequence};
 use midir::MidiOutputConnection;
+use tseq::log_send;
+use tseq::sequence::{end_note, param_value, start_note, Sequence};
 
 pub enum Timing {
 	Note,
@@ -34,7 +34,7 @@ impl Acid {
 		}
 	}
 
-	pub fn trigger(&mut self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
+	pub fn trigger(&self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
 		if step % 6 == 0 {
 			let t = step / 6;
 			match self.prev_note {
@@ -43,7 +43,18 @@ impl Acid {
 			}
 			let cur_pattern = &self.patterns[self.cur_id];
 			let cur_trig = t as usize % cur_pattern.len();
-			let cur_note = &self.patterns[cur_trig];
+			let cur_note = &self.patterns[self.cur_id][cur_trig];
+			match cur_note.timing {
+				Note => log_send(
+					conn,
+					&start_note(
+						ACID_CHANNEL,
+						root + cur_note.note.0 + cur_note.note.1 * 12,
+						100,
+					),
+				),
+				_ => { /*TODO*/ }
+			}
 		}
 	}
 }

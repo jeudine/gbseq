@@ -1,6 +1,8 @@
+mod acid;
 mod breakbeat;
 mod drop;
 mod hh;
+mod lead;
 mod mbreak;
 use breakbeat::Breakbeat0;
 use drop::{Drop0, HighPass0};

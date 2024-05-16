@@ -45,7 +45,7 @@ pub fn messages_gen(
 			log_send(&mut channel.conn, &[START]);
 		}
 
-		let (sequence, transition, ch, oh, root, sel_patt) =
+		let (sequence, transition, ch, oh, root, sel_patt, lead) =
 			state.get_cur_sequence(channel.step, &mut rng);
 
 		if let Some(s) = sel_patt {
@@ -70,6 +70,7 @@ pub fn messages_gen(
 			ch,
 			root,
 			transition,
+			lead,
 		);
 	}
 }

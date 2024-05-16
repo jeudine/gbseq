@@ -11,7 +11,6 @@ pub use state::Transition;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::spawn;
 use thiserror::Error;
-mod acid;
 mod action;
 mod clock;
 mod message;
