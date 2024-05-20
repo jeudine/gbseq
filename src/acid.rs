@@ -25,63 +25,62 @@ pub struct AcidTrig {
 pub struct Acid {
 	patterns: Vec<Vec<AcidTrig>>,
 	cur_id: usize,
-	prev_note: Timing,
+	prev_note: (Timing, u8, u8),
 }
 
 impl Acid {
 	pub fn new() -> Self {
 		let pattern_0 = Self::new_pattern(vec![
 			((0, 0), 89, false, Note),
-			((1, 0), 89, false, Note),
-			((2, 0), 89, false, Note),
-			((3, 0), 89, false, Note),
-			((4, 0), 89, false, Note),
-			((5, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
+			((0, 1), 127, false, Note),
 			((0, 0), 89, false, Note),
+			((11, 0), 127, false, Note),
 			((0, 0), 89, false, Note),
+			((8, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
+			((3, 0), 127, false, Note),
+			((0, 0), 89, false, Rest),
 			((0, 0), 89, false, Note),
+			((8, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
+			((11, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
-			((0, 0), 89, false, Note),
-			((0, 0), 89, false, Note),
-			((0, 0), 89, false, Note),
+			((0, 1), 127, false, Note),
 		]);
 		Self {
 			patterns: vec![pattern_0],
 			cur_id: 0,
-			prev_note: Rest,
+			prev_note: (Rest, 0, 0),
 		}
 	}
 
-	pub fn trigger(&self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
+	pub fn trigger(&mut self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
 		if step % 6 == 0 {
 			let t = step / 6;
-			let cur_pattern = &self.patterns[self.cur_id];
-			let cur_trig = t as usize % cur_pattern.len();
+			let cur_trig = t as usize % self.patterns[self.cur_id].len();
+			self.prev_note.0 = self.patterns[self.cur_id][cur_trig].timing;
 			let cur_note = &self.patterns[self.cur_id][cur_trig];
 
 			if let Tie = cur_note.timing {
 			} else {
-				match self.prev_note {
+				match self.prev_note.0 {
 					Note | Tie => {
-						log_send(conn, &end_note(LEAD_CHANNEL, root, 100));
+						log_send(
+							conn,
+							&end_note(LEAD_CHANNEL, self.prev_note.1, self.prev_note.2),
+						);
 					}
 					_ => {}
 				}
 			}
 
+			let note = root + cur_note.note.0 + cur_note.note.1 * 12;
 			match cur_note.timing {
 				Note => {
-					log_send(
-						conn,
-						&start_note(
-							LEAD_CHANNEL,
-							root + cur_note.note.0 + cur_note.note.1 * 12,
-							100,
-						),
-					);
+					log_send(conn, &start_note(LEAD_CHANNEL, note, cur_note.vel));
+					self.prev_note.1 = note;
+					self.prev_note.2 = cur_note.vel;
 				}
 				_ => {}
 			}
@@ -102,5 +101,9 @@ impl Acid {
 				timing: u.3,
 			})
 			.collect()
+	}
+
+	pub fn get_prev_note(&self) -> (u8, u8) {
+		(self.prev_note.1, self.prev_note.2)
 	}
 }
