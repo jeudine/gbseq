@@ -1,5 +1,7 @@
+use crate::acid::Acid;
+use crate::lead::Lead;
 use crate::pattern::{Note, Pattern};
-use crate::sequence::{Lead, Sequence, LFO};
+use crate::sequence::{Sequence, LFO};
 use rand::rngs::ThreadRng;
 use std::default::Default;
 
@@ -18,6 +20,14 @@ pub enum Transition {
 	No,
 	In(Stage),
 	Out(Stage),
+}
+
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
+pub enum SelLead {
+	#[default]
+	None,
+	Acid,
+	Psy,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -47,6 +57,7 @@ pub struct State {
 	patterns: Vec<Pattern>,
 	cur_pattern_id: usize,
 	pub sel_patt: Option<SelPatt>,
+	pub sel_lead: Option<SelLead>,
 	stage: Stage,
 	next_stage: Stage,
 	cur_seq_id: usize,
@@ -55,12 +66,14 @@ pub struct State {
 	pub oh_toggle: bool,
 	pub ch_toggle: bool,
 	transition: Transition,
+	pub lead: Lead,
 }
 
 impl State {
 	pub fn new(patterns: Vec<Pattern>) -> Self {
 		let mut state = State::default();
 		state.patterns = patterns;
+		state.lead.acid = Acid::new();
 		state
 	}
 
@@ -75,7 +88,6 @@ impl State {
 		bool,
 		u8,
 		Option<(SelPatt, u8)>,
-		Lead,
 	) {
 		let mut sel_patt: Option<(SelPatt, u8)> = None;
 		if step % 96 == 0 {
@@ -94,6 +106,10 @@ impl State {
 					self.ch = !self.ch;
 					self.ch_toggle = false;
 				}
+				if let Some(l) = self.sel_lead {
+					self.lead.switch(&l);
+					self.sel_lead = None;
+				}
 			} else if self.next_stage == self.stage && self.transition.is_transition_in() {
 				self.transition = Transition::No;
 			} else if self.next_stage == self.stage && self.transition == Transition::No {
@@ -104,6 +120,10 @@ impl State {
 				if self.ch_toggle {
 					self.ch = !self.ch;
 					self.ch_toggle = false;
+				}
+				if let Some(l) = self.sel_lead {
+					self.lead.switch(&l);
+					self.sel_lead = None;
 				}
 			}
 
@@ -123,16 +143,7 @@ impl State {
 		let sequence =
 			self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage);
 
-		//TODO
-		(
-			sequence,
-			self.transition,
-			self.ch,
-			self.oh,
-			root,
-			sel_patt,
-			Lead::Acid,
-		)
+		(sequence, self.transition, self.ch, self.oh, root, sel_patt)
 	}
 
 	pub fn set_next_stage(&mut self, stage: &Stage) {

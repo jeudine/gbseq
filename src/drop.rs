@@ -6,8 +6,8 @@ use rand::{
 	Rng,
 };
 use tseq::sequence::{
-	cc_parameter, control_change, end_note, param_value, start_note, Lead, Sequence, CC_LAYER,
-	CC_LENGTH, CC_LEVEL, LFO, SP1,
+	cc_parameter, control_change, end_note, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH,
+	CC_LEVEL, LFO, SP1,
 };
 use tseq::Stage;
 use tseq::{log_send, Transition};
@@ -52,7 +52,6 @@ impl Sequence for Drop0 {
 		ch: bool,
 		root: u8,
 		transition: Transition,
-		lead: Lead,
 	) {
 		let t = step % 96;
 
@@ -153,6 +152,10 @@ impl Sequence for Drop0 {
 					);
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 				}
+			} else {
+				if t == 72 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+				}
 			}
 		}
 
@@ -185,7 +188,6 @@ impl Sequence for HighPass0 {
 		ch: bool,
 		root: u8,
 		transition: Transition,
-		lead: Lead,
 	) {
 		let t = step % 96;
 

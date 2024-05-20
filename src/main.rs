@@ -1,12 +1,11 @@
-mod acid;
 mod breakbeat;
 mod drop;
 mod hh;
-mod lead;
 mod mbreak;
 use breakbeat::Breakbeat0;
 use drop::{Drop0, HighPass0};
 use mbreak::Break0;
+use tseq::acid;
 use tseq::sequence::Sequence;
 use tseq::Note;
 use tseq::{run, Pattern};
@@ -17,7 +16,6 @@ fn main() {
 	let drop0 = Drop0::default();
 	let breakbeat0 = Breakbeat0::default();
 
-	//let patterns = [155, 156, 158, 160, 162, 164, 166, 168]
 	let patterns = [
 		(155, Note::C),
 		(156, Note::A),

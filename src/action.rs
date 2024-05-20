@@ -1,5 +1,5 @@
 use crate::pattern::Note;
-use crate::state::{SelPatt, Stage, State};
+use crate::state::{SelLead, SelPatt, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
 use std::default::Default;
@@ -17,6 +17,7 @@ struct Action {
 	ch_toggle: bool,
 	oh_toggle: bool,
 	pattern: Option<SelPatt>,
+	lead: Option<SelLead>,
 }
 
 pub fn handle(
@@ -54,6 +55,7 @@ pub fn handle(
 	state.oh_toggle = action.oh_toggle;
 	state.ch_toggle = action.ch_toggle;
 	state.sel_patt = action.pattern;
+	state.sel_lead = action.lead;
 
 	Some(state.get_root_note_bpm())
 }
@@ -73,6 +75,9 @@ impl Action {
 				'6' => action.oh_toggle = true,
 				'7' => action.pattern = Some(SelPatt::Prev),
 				'8' => action.pattern = Some(SelPatt::Next),
+				'/' => action.lead = Some(SelLead::None),
+				'*' => action.lead = Some(SelLead::Acid),
+				'-' => action.lead = Some(SelLead::Psy),
 				_ => {}
 			}
 		}
