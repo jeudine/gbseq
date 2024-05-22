@@ -4,10 +4,11 @@ use crate::Channel;
 use std::mem::drop;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::sleep;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 pub fn clock_gen(channel_arc: &Arc<(Mutex<Channel>, Condvar)>) {
 	loop {
+		let now = Instant::now();
 		let (channel, cvar) = &**channel_arc;
 		let mut channel = channel.lock().unwrap();
 		log_send(&mut channel.conn, &[message::CLOCK]);
@@ -16,7 +17,8 @@ pub fn clock_gen(channel_arc: &Arc<(Mutex<Channel>, Condvar)>) {
 		// Unlock the mutex
 		drop(channel);
 		cvar.notify_one();
-		sleep(Duration::from_micros(period));
+		let sleep_time = Duration::from_micros(period) - now.elapsed();
+		sleep(sleep_time);
 	}
 }
 
