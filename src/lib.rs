@@ -10,6 +10,7 @@ use state::State;
 pub use state::Transition;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::spawn;
+use std::time::Instant;
 use thiserror::Error;
 pub mod acid;
 mod action;
@@ -37,6 +38,8 @@ pub enum TSeqError {
 struct Channel {
 	conn: MidiOutputConnection,
 	period_us: u64,
+	timestamp: Instant,
+	bpm_step: u32,
 	step: u32,
 }
 
@@ -73,6 +76,8 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	let channel = Channel {
 		conn,
 		period_us: compute_period_us(patterns[0].bpm),
+		timestamp: Instant::now(),
+		bpm_step: 0,
 		step: 0,
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));

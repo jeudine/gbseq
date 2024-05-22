@@ -1,7 +1,7 @@
 use crate::acid::Acid;
 use crate::lead::Lead;
 use crate::pattern::{Note, Pattern};
-use crate::sequence::{Sequence, LFO};
+use crate::sequence::Sequence;
 use rand::rngs::ThreadRng;
 use std::default::Default;
 

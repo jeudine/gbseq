@@ -4,6 +4,7 @@ use crate::sequence::{control_change, CC_BANK_SEL, CC_KIT_SEL};
 use crate::state::{SelPatt, State};
 use crate::Channel;
 use std::sync::{Arc, Condvar, Mutex};
+use std::time::Instant;
 
 pub const CLOCK: u8 = 0xf8;
 pub const START: u8 = 0xfa;
@@ -52,6 +53,8 @@ pub fn messages_gen(
 			// New bpm
 			let period = clock::compute_period_us(s.1);
 			channel.period_us = period;
+			channel.timestamp = Instant::now();
+			channel.bpm_step = 1;
 
 			// Send message to select next kit
 			let message = match s.0 {
