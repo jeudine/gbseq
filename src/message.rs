@@ -53,8 +53,7 @@ pub fn messages_gen(
 			// New bpm
 			let period = clock::compute_period_us(s.1);
 			channel.period_us = period;
-			channel.timestamp = Instant::now();
-			channel.bpm_step = 1;
+			channel.update_timestamp = true;
 
 			// Send message to select next kit
 			let message = match s.0 {

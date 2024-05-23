@@ -39,6 +39,7 @@ struct Channel {
 	conn: MidiOutputConnection,
 	period_us: u64,
 	timestamp: Instant,
+	update_timestamp: bool,
 	bpm_step: u32,
 	step: u32,
 }
@@ -77,6 +78,7 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 		conn,
 		period_us: compute_period_us(patterns[0].bpm),
 		timestamp: Instant::now(),
+		update_timestamp: true,
 		bpm_step: 0,
 		step: 0,
 	};
