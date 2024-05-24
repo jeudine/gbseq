@@ -1,3 +1,4 @@
+use crate::state::LeadState;
 use action::handle;
 use clock::{clock_gen, compute_period_us};
 use message::messages_gen;
@@ -84,7 +85,7 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	};
 	let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
-	let mut note_bpm = (patterns[0].root, patterns[0].bpm);
+	let mut infos = (patterns[0].root, patterns[0].bpm, LeadState::None);
 
 	let state = State::new(patterns);
 
@@ -100,10 +101,10 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 	let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id - 1));
 
 	loop {
-		let s = format!("[{} {}]", note_bpm.0.get_str(), note_bpm.1);
+		let s = format!("[{} {} {}]", infos.0.get_str(), infos.1, infos.2);
 		let s: String = prompt(s)?;
-		if let Some(n_b) = handle(&s, &channel_arc, &state_arc) {
-			note_bpm = n_b;
+		if let Some(i) = handle(&s, &channel_arc, &state_arc) {
+			infos = i;
 		} else {
 			break;
 		}

@@ -1,5 +1,5 @@
 use crate::pattern::Note;
-use crate::state::{SelLead, SelPatt, Stage, State};
+use crate::state::{LeadState, SelPatt, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
 use std::default::Default;
@@ -17,14 +17,14 @@ struct Action {
 	ch_toggle: bool,
 	oh_toggle: bool,
 	pattern: Option<SelPatt>,
-	lead: Option<SelLead>,
+	lead: Option<LeadState>,
 }
 
 pub fn handle(
 	s: &String,
 	channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
 	state_arc: &Arc<Mutex<State>>,
-) -> Option<(Note, u8)> {
+) -> Option<(Note, u8, LeadState)> {
 	let action = Action::parse(s);
 	let (channel, _) = &**channel_arc;
 	let mut state = state_arc.lock().unwrap();
@@ -39,7 +39,7 @@ pub fn handle(
 				} else {
 					log_send(&mut channel.conn, &[message::STOP]);
 				}
-				return Some(state.get_root_note_bpm());
+				return Some(state.get_root_note_bpm_lead());
 			}
 			System::Quit => {
 				log_send(&mut channel.conn, &[message::STOP]);
@@ -57,7 +57,7 @@ pub fn handle(
 	state.sel_patt = action.pattern;
 	state.sel_lead = action.lead;
 
-	Some(state.get_root_note_bpm())
+	Some(state.get_root_note_bpm_lead())
 }
 
 impl Action {
@@ -75,9 +75,9 @@ impl Action {
 				'6' => action.oh_toggle = true,
 				'7' => action.pattern = Some(SelPatt::Prev),
 				'8' => action.pattern = Some(SelPatt::Next),
-				'/' => action.lead = Some(SelLead::None),
-				'*' => action.lead = Some(SelLead::Acid),
-				'-' => action.lead = Some(SelLead::Psy),
+				'/' => action.lead = Some(LeadState::None),
+				'*' => action.lead = Some(LeadState::Acid),
+				'-' => action.lead = Some(LeadState::Psy),
 				_ => {}
 			}
 		}

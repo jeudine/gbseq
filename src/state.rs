@@ -4,6 +4,7 @@ use crate::pattern::{Note, Pattern};
 use crate::sequence::Sequence;
 use rand::rngs::ThreadRng;
 use std::default::Default;
+use std::fmt;
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub enum Stage {
@@ -23,13 +24,22 @@ pub enum Transition {
 }
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
-pub enum SelLead {
+pub enum LeadState {
 	#[default]
 	None,
 	Acid,
 	Psy,
 }
 
+impl fmt::Display for LeadState {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			LeadState::None => write!(f, "None"),
+			LeadState::Acid => write!(f, "Acid"),
+			LeadState::Psy => write!(f, "Psy"),
+		}
+	}
+}
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum SelPatt {
 	Prev,
@@ -57,7 +67,7 @@ pub struct State {
 	patterns: Vec<Pattern>,
 	cur_pattern_id: usize,
 	pub sel_patt: Option<SelPatt>,
-	pub sel_lead: Option<SelLead>,
+	pub sel_lead: Option<LeadState>,
 	stage: Stage,
 	next_stage: Stage,
 	cur_seq_id: usize,
@@ -170,7 +180,7 @@ impl State {
 		self.patterns[self.cur_pattern_id].root.get_midi()
 	}
 
-	pub fn get_root_note_bpm(&self) -> (Note, u8) {
+	pub fn get_root_note_bpm_lead(&self) -> (Note, u8, LeadState) {
 		let mut i = self.cur_pattern_id;
 		if let Some(p) = self.sel_patt {
 			match p {
@@ -186,6 +196,11 @@ impl State {
 				}
 			};
 		}
-		(self.patterns[i].root, self.patterns[i].bpm)
+
+		let mut lead = self.lead.get_state();
+		if let Some(l) = self.sel_lead {
+			lead = l;
+		}
+		(self.patterns[i].root, self.patterns[i].bpm, lead)
 	}
 }

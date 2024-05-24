@@ -1,7 +1,7 @@
 use crate::acid::Acid;
 use crate::log_send;
 use crate::sequence::{end_note, start_note};
-use crate::state::SelLead;
+use crate::state::LeadState;
 use midir::MidiOutputConnection;
 
 pub const LEAD_CHANNEL: u8 = 3;
@@ -9,8 +9,8 @@ pub const LEAD_CHANNEL: u8 = 3;
 #[derive(Default)]
 pub struct Lead {
 	pub acid: Acid,
-	state: SelLead,
-	prev_state: SelLead,
+	state: LeadState,
+	prev_state: LeadState,
 	end_note: bool,
 	start_note: bool,
 }
@@ -20,11 +20,11 @@ impl Lead {
 		if self.end_note {
 			self.end_note = false;
 			match self.prev_state {
-				SelLead::Acid => {
+				LeadState::Acid => {
 					let prev_note = self.acid.get_prev_note();
 					log_send(conn, &end_note(LEAD_CHANNEL, prev_note.0, prev_note.1));
 				}
-				SelLead::Psy => {
+				LeadState::Psy => {
 					log_send(conn, &end_note(LEAD_CHANNEL, root, 100));
 				}
 				_ => {}
@@ -35,20 +35,24 @@ impl Lead {
 			log_send(conn, &start_note(LEAD_CHANNEL, root, 100));
 		}
 		match self.state {
-			SelLead::Acid => self.acid.trigger(step, conn, root),
+			LeadState::Acid => self.acid.trigger(step, conn, root),
 			_ => {}
 		}
 	}
 
-	pub fn switch(&mut self, state: &SelLead) {
+	pub fn switch(&mut self, state: &LeadState) {
 		match self.state {
-			SelLead::Acid | SelLead::Psy => self.end_note = true,
+			LeadState::Acid | LeadState::Psy => self.end_note = true,
 			_ => {}
 		}
-		if let SelLead::Psy = state {
+		if let LeadState::Psy = state {
 			self.start_note = true;
 		}
 		self.prev_state = self.state;
 		self.state = *state;
+	}
+
+	pub fn get_state(&self) -> LeadState {
+		self.state
 	}
 }

@@ -31,22 +31,21 @@ pub struct Acid {
 impl Acid {
 	pub fn new() -> Self {
 		let pattern_0 = Self::new_pattern(vec![
+			((0, 1), 127, false, Note),
 			((0, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
 			((0, 1), 127, false, Note),
+			((0, 0), 89, false, Note),
+			((0, 0), 89, false, Note),
+			((0, 1), 127, false, Note),
+			((0, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
 			((11, 0), 127, false, Note),
 			((0, 0), 89, false, Note),
-			((8, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
-			((3, 0), 127, false, Note),
-			((0, 0), 89, false, Rest),
+			((8, 0), 127, true, Note),
+			((0, 0), 89, false, Tie),
 			((0, 0), 89, false, Note),
-			((8, 0), 89, false, Note),
-			((0, 0), 89, false, Note),
-			((11, 0), 89, false, Note),
-			((0, 0), 89, false, Note),
-			((0, 1), 127, false, Note),
 		]);
 		Self {
 			patterns: vec![pattern_0],
@@ -62,8 +61,13 @@ impl Acid {
 			self.prev_note.0 = self.patterns[self.cur_id][cur_trig].timing;
 			let cur_note = &self.patterns[self.cur_id][cur_trig];
 
-			if let Tie = cur_note.timing {
+			let no_end = if let Tie = cur_note.timing {
+				true
 			} else {
+				false
+			};
+
+			if !no_end && !cur_note.slide {
 				match self.prev_note.0 {
 					Note | Tie => {
 						log_send(
@@ -75,6 +79,8 @@ impl Acid {
 				}
 			}
 
+			let prev_note = self.prev_note;
+
 			let note = root + cur_note.note.0 + cur_note.note.1 * 12;
 			match cur_note.timing {
 				Note => {
@@ -83,6 +89,15 @@ impl Acid {
 					self.prev_note.2 = cur_note.vel;
 				}
 				_ => {}
+			}
+
+			if !no_end && cur_note.slide {
+				match prev_note.0 {
+					Note | Tie => {
+						log_send(conn, &end_note(LEAD_CHANNEL, prev_note.1, prev_note.2));
+					}
+					_ => {}
+				}
 			}
 		}
 	}
