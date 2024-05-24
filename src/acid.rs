@@ -46,6 +46,7 @@ impl Acid {
 			((8, 0), 127, true, Note),
 			((0, 0), 89, false, Tie),
 			((0, 0), 89, false, Note),
+			((0, 0), 89, false, Note),
 		]);
 		Self {
 			patterns: vec![pattern_0],
