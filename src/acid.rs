@@ -48,8 +48,28 @@ impl Acid {
 			((0, 0), 89, false, Note),
 			((0, 0), 89, false, Note),
 		]);
+
+		let pattern_1 = Self::new_pattern(vec![
+			((0, 1), 127, false, Note),
+			((0, 0), 89, false, Note),
+			((0, 1), 127, false, Note),
+			((0, 0), 89, true, Note),
+			((0, 1), 127, false, Note),
+			((0, 0), 89, false, Note),
+			((11, 0), 127, true, Note),
+			((0, 0), 89, false, Note),
+			((0, 0), 89, false, Note),
+			((8, 0), 127, false, Note),
+			((0, 0), 89, false, Note),
+			((11, 0), 127, false, Note),
+			((0, 0), 89, false, Note),
+			((0, 1), 127, true, Note),
+			((0, 0), 89, false, Tie),
+			((0, 0), 89, false, Note),
+		]);
+
 		Self {
-			patterns: vec![pattern_0],
+			patterns: vec![pattern_0, pattern_1],
 			cur_id: 0,
 			prev_note: (Rest, 0, 0),
 		}

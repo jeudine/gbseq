@@ -48,6 +48,11 @@ impl Lead {
 		if let LeadState::Psy = state {
 			self.start_note = true;
 		}
+
+		if let LeadState::Acid = state {
+			self.acid.next_pattern();
+		}
+
 		self.prev_state = self.state;
 		self.state = *state;
 	}
