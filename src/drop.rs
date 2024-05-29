@@ -131,7 +131,7 @@ impl Sequence for Drop0 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
 
-			if t == 12 && rng.gen_bool(DOUBLED_PROBA) {
+			if t == 12 && !transition.is_transition_in() && rng.gen_bool(DOUBLED_PROBA) {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
 
