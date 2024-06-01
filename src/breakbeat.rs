@@ -102,6 +102,49 @@ impl Rythm {
 		mat_len[0] = NB_TRIGS;
 
 		// Compute the rythm
+		let mut a = NB_TRIGS as u8;
+		let mut b = k;
+		let mut last_line = 1;
+
+		while b > 0 {
+			// Move the most right b columns
+			let len = mat_len[0];
+			let mut moved_elems: [usize; NB_TRIGS] = [0; NB_TRIGS];
+			let mut new_last_line = 0;
+
+			for i in 0..b as usize {
+				let col = len - b as usize + i as usize;
+				for j in 0..last_line {
+					if mat_len[j] > col {
+						mat[i][last_line + j] = mat[col][j];
+						moved_elems[j] += 1;
+						mat_len[last_line + j] += 1;
+					} else {
+						if i == 0 {
+							new_last_line = last_line + j;
+						}
+						break;
+					}
+				}
+			}
+
+			for i in 0..last_line {
+				mat_len[i] -= moved_elems[i];
+			}
+			last_line = new_last_line;
+
+			//DEBUG
+			for i in 0..last_line {
+				for j in 0..mat_len[i] {
+					print!("{}", mat[j][i]);
+				}
+				println!("");
+			}
+
+			let r = a % b;
+			a = b;
+			b = r;
+		}
 
 		let trigs: [bool; NB_TRIGS] = [false; NB_TRIGS];
 		Self { trigs, k }
