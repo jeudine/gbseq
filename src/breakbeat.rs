@@ -11,9 +11,11 @@ use tseq::{log_send, Transition};
 const TRIG_PROBA: f64 = 0.7;
 const FREEZE_PROBA: f64 = 0.7;
 
+const DOUBLED_PROBA: f64 = 0.33;
+
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const LAYER_ARRAY: [u8; 3] = [0x00, 0x40, 0x60];
-const NB_TRIGS: usize = 32;
+const NB_TRIGS: usize = 16;
 
 #[derive(Copy, Clone, Default)]
 struct Rythm {
@@ -27,6 +29,7 @@ pub struct Breakbeat0 {
 	level: u8,
 	ch_prev: bool,
 	oh_prev: bool,
+	doubled: bool,
 }
 
 // TODO: try adding LFO on some effects
@@ -49,8 +52,12 @@ impl Sequence for Breakbeat0 {
 				conn,
 				&control_change(channel_id, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[2]),
 			);
-			let pattern = Rythm::compute_euclidean_rythm(rng, &vec![]);
-			self.patterns[0] = pattern;
+			let pattern_0 = Rythm::compute_euclidean_rythm(rng, &vec![]);
+			let pattern_1 = Rythm::compute_euclidean_rythm(rng, &vec![pattern_0.k]);
+			let pattern_2 = Rythm::compute_euclidean_rythm(rng, &vec![pattern_0.k, pattern_1.k]);
+			self.patterns[0] = pattern_0;
+			self.patterns[1] = pattern_1;
+			self.patterns[2] = pattern_2;
 			self.level = 0;
 			self.ch_prev = false;
 			self.oh_prev = false;
@@ -66,6 +73,20 @@ impl Sequence for Breakbeat0 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
 			return;
+		}
+
+		if t == 12 || t == 48 {
+			if rng.gen_bool(DOUBLED_PROBA) {
+				if let Transition::Out(Stage::Drop) = transition {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.3)));
+				} else {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+				}
+				self.doubled = true;
+				return;
+			} else {
+				self.doubled = false;
+			}
 		}
 
 		if let Transition::Out(Stage::Drop) = transition {
@@ -84,10 +105,11 @@ impl Sequence for Breakbeat0 {
 			let t = t as usize % NB_TRIGS;
 			for (i, p) in self.patterns.iter().enumerate() {
 				if p.trigs[t] {
-					log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.0)));
-				}
-				if i as u8 >= self.level {
-					break;
+					if let Transition::Out(Stage::Drop) = transition {
+						log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.3)));
+					} else {
+						log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.0)));
+					}
 				}
 			}
 		}
@@ -96,7 +118,7 @@ impl Sequence for Breakbeat0 {
 
 impl Rythm {
 	fn compute_euclidean_rythm(rng: &mut ThreadRng, existing_k: &Vec<u8>) -> Self {
-		let mut _k = rng.gen_range(8..=24);
+		let mut _k = rng.gen_range(3..=5);
 
 		// We want a new euclidean rythm
 		let mut found = true;
