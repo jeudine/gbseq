@@ -72,7 +72,6 @@ impl Sequence for Breakbeat0 {
 			} else {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 			}
-			return;
 		}
 
 		if t == 12 || t == 48 {
@@ -83,7 +82,6 @@ impl Sequence for Breakbeat0 {
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 				}
 				self.doubled = true;
-				return;
 			} else {
 				self.doubled = false;
 			}
@@ -118,7 +116,7 @@ impl Sequence for Breakbeat0 {
 
 impl Rythm {
 	fn compute_euclidean_rythm(rng: &mut ThreadRng, existing_k: &Vec<u8>) -> Self {
-		let mut _k = rng.gen_range(3..=5);
+		let mut _k = rng.gen_range(1..=5);
 
 		// We want a new euclidean rythm
 		let mut found = true;
@@ -127,7 +125,11 @@ impl Rythm {
 			for e_k in existing_k {
 				if _k == *e_k {
 					found = true;
-					_k -= 1;
+					if _k == 1 {
+						_k = 5
+					} else {
+						_k -= 1;
+					}
 					break;
 				}
 			}
