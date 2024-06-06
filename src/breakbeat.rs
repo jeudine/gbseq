@@ -23,13 +23,12 @@ struct Rythm {
 	k: u8,
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct Breakbeat0 {
-	patterns: [Rythm; 3],
+	cur_pattern_id: usize,
 	level: u8,
-	ch_prev: bool,
-	oh_prev: bool,
 	doubled: bool,
+	patterns: Vec<[Rythm; 3]>,
 }
 
 // TODO: try adding LFO on some effects
@@ -52,18 +51,7 @@ impl Sequence for Breakbeat0 {
 				conn,
 				&control_change(channel_id, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[2]),
 			);
-			let pattern_0 = Rythm::compute_euclidean_rythm(rng, &vec![]);
-			let pattern_1 = Rythm::compute_euclidean_rythm(rng, &vec![pattern_0.k]);
-			let pattern_2 = Rythm::compute_euclidean_rythm(rng, &vec![pattern_0.k, pattern_1.k]);
-			self.patterns[0] = pattern_0;
-			self.patterns[1] = pattern_1;
-			self.patterns[2] = pattern_2;
-			self.level = 0;
-			self.ch_prev = false;
-			self.oh_prev = false;
 		}
-
-		if ch && !self.ch_prev {}
 
 		// Kicks
 		if t == 0 || t == 36 {
@@ -101,7 +89,7 @@ impl Sequence for Breakbeat0 {
 		if step % 6 == 0 {
 			let t = step / 6;
 			let t = t as usize % NB_TRIGS;
-			for (i, p) in self.patterns.iter().enumerate() {
+			for (i, p) in self.cur_pattern.iter().enumerate() {
 				if p.trigs[t] {
 					if let Transition::Out(Stage::Drop) = transition {
 						log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.3)));
@@ -114,26 +102,18 @@ impl Sequence for Breakbeat0 {
 	}
 }
 
-impl Rythm {
-	fn compute_euclidean_rythm(rng: &mut ThreadRng, existing_k: &Vec<u8>) -> Self {
-		let mut _k = rng.gen_range(1..=5);
+impl Breakbeat0 {
+	fn push_rythm(&mut self, rythm: [u8; 3]) {
+		let pattern = rythm
+			.iter()
+			.map(|k| Rythm::compute_euclidean_rythm(*k))
+			.collect::<Vec<Rythm>>();
+		self.patterns.push([pattern[0], pattern[1], pattern[2]]);
+	}
+}
 
-		// We want a new euclidean rythm
-		let mut found = true;
-		while found {
-			found = false;
-			for e_k in existing_k {
-				if _k == *e_k {
-					found = true;
-					if _k == 1 {
-						_k = 5
-					} else {
-						_k -= 1;
-					}
-					break;
-				}
-			}
-		}
+impl Rythm {
+	fn compute_euclidean_rythm(_k: u8) -> Self {
 		let (k, compl) = if _k > NB_TRIGS as u8 / 2 {
 			(NB_TRIGS as u8 - _k, true)
 		} else {

@@ -29,7 +29,7 @@ fn main() {
 		let s_break: Vec<Box<dyn Sequence + Send>> = vec![Box::new(break0)];
 		let s_drop: Vec<Box<dyn Sequence + Send>> = vec![Box::new(drop0)];
 		let s_high_pass: Vec<Box<dyn Sequence + Send>> = vec![Box::new(highpass0)];
-		let s_breakbeat: Vec<Box<dyn Sequence + Send>> = vec![Box::new(breakbeat0)];
+		let s_breakbeat: Vec<Box<dyn Sequence + Send>> = vec![Box::new(breakbeat0.clone())];
 		Pattern {
 			bpm: *bpm as u8,
 			s_break,
