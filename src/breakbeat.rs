@@ -51,6 +51,7 @@ impl Sequence for Breakbeat0 {
 				conn,
 				&control_change(channel_id, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[2]),
 			);
+			self.cur_pattern_id = rng.gen_range(0..self.patterns.len());
 		}
 
 		// Kicks
@@ -86,10 +87,11 @@ impl Sequence for Breakbeat0 {
 		}
 
 		// Percusions
+		let pattern = &self.patterns[self.cur_pattern_id];
 		if step % 6 == 0 {
 			let t = step / 6;
 			let t = t as usize % NB_TRIGS;
-			for (i, p) in self.cur_pattern.iter().enumerate() {
+			for (i, p) in pattern.iter().enumerate() {
 				if p.trigs[t] {
 					if let Transition::Out(Stage::Drop) = transition {
 						log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.3)));
@@ -103,7 +105,7 @@ impl Sequence for Breakbeat0 {
 }
 
 impl Breakbeat0 {
-	fn push_rythm(&mut self, rythm: [u8; 3]) {
+	pub fn push_rythm(&mut self, rythm: [u8; 3]) {
 		let pattern = rythm
 			.iter()
 			.map(|k| Rythm::compute_euclidean_rythm(*k))

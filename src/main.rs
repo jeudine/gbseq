@@ -14,7 +14,10 @@ fn main() {
 	let break0 = Break0::default();
 	let highpass0 = HighPass0::default();
 	let drop0 = Drop0::default();
-	let breakbeat0 = Breakbeat0::default();
+	let mut breakbeat0 = Breakbeat0::default();
+	breakbeat0.push_rythm([3, 2, 1]);
+	breakbeat0.push_rythm([4, 3, 1]);
+	breakbeat0.push_rythm([5, 1, 2]);
 
 	let patterns = [
 		(155, Note::C),
