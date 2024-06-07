@@ -55,48 +55,73 @@ impl Sequence for Breakbeat0 {
 		}
 
 		// Kicks
-		if t == 0 || t == 36 {
-			if let Transition::Out(Stage::Drop) = transition {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.3)));
-			} else {
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
-			}
-		}
-
-		if t == 12 || t == 48 {
-			if rng.gen_bool(DOUBLED_PROBA) {
+		if oh {
+			if t == 0 || t == 36 {
 				if let Transition::Out(Stage::Drop) = transition {
-					log_send(conn, &start_note(channel_id, SP1, param_value(0.3)));
 				} else {
 					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
 				}
-				self.doubled = true;
-			} else {
-				self.doubled = false;
 			}
-		}
 
-		if let Transition::Out(Stage::Drop) = transition {
-			if t == 84 {
-				log_send(
-					conn,
-					&control_change(channel_id, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[0]),
-				);
-				log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+			if t == 12 || t == 48 {
+				if rng.gen_bool(DOUBLED_PROBA) {
+					if let Transition::Out(Stage::Drop) = transition {
+					} else {
+						log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+					}
+					self.doubled = true;
+				} else {
+					self.doubled = false;
+				}
+			}
+
+			if let Transition::Out(Stage::Drop) = transition {
+				if t == 0 {
+					log_send(
+						conn,
+						&control_change(channel_id, cc_parameter(CC_LAYER, 0), 0),
+					);
+
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
+				} else if t == 24 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.5)));
+				} else if t == 48 {
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
+				} else if t == 84 {
+					log_send(
+						conn,
+						&control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
+					);
+					log_send(
+						conn,
+						&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
+					);
+
+					log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+				}
 			}
 		}
 
 		// Percusions
-		let pattern = &self.patterns[self.cur_pattern_id];
-		if step % 6 == 0 {
-			let t = step / 6;
-			let t = t as usize % NB_TRIGS;
-			for (i, p) in pattern.iter().enumerate() {
-				if p.trigs[t] {
-					if let Transition::Out(Stage::Drop) = transition {
-						log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.3)));
-					} else {
-						log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.0)));
+		if ch {
+			let pattern = &self.patterns[self.cur_pattern_id];
+			if step % 6 == 0 {
+				let t = step / 6;
+				let t = t as usize % NB_TRIGS;
+				for (i, p) in pattern.iter().enumerate() {
+					if p.trigs[t] {
+						if let Transition::Out(Stage::Drop) = transition {
+							log_send(
+								conn,
+								&start_note(
+									channel_id,
+									SP_ARRAY[i],
+									param_value(-0.5 - 0.5 * t as f32 / 96.0),
+								),
+							);
+						} else {
+							log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.0)));
+						}
 					}
 				}
 			}

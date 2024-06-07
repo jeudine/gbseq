@@ -263,6 +263,11 @@ impl Sequence for HighPass0 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.8)));
 			} else if t == 72 {
 				log_send(conn, &start_note(channel_id, SP1, param_value(0.9)));
+			} else if t == 84 {
+				log_send(
+					conn,
+					&control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
+				);
 			}
 		} else {
 			if t == 0 || t == 24 || t == 48 {

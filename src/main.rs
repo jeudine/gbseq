@@ -17,7 +17,7 @@ fn main() {
 	let mut breakbeat0 = Breakbeat0::default();
 	breakbeat0.push_rythm([3, 2, 1]);
 	breakbeat0.push_rythm([4, 3, 1]);
-	breakbeat0.push_rythm([5, 1, 2]);
+	breakbeat0.push_rythm([5, 3, 2]);
 
 	let patterns = [
 		(155, Note::C),
