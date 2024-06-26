@@ -46,8 +46,8 @@ pub fn messages_gen(
             log_send(&mut channel.conn, &[START]);
         }
 
-        let (sequence, transition, ch, oh, root, sel_patt) =
-            state.get_cur_sequence(channel.step, &mut rng);
+        let (transition, ch, oh, perc, root, sel_patt) = state.update(channel.step, &mut rng);
+        let sequence = state.get_sequence();
 
         if let Some(s) = sel_patt {
             // New bpm
@@ -70,6 +70,7 @@ pub fn messages_gen(
             &mut rng,
             oh,
             ch,
+            perc,
             root,
             transition,
         );

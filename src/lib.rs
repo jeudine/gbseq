@@ -1,3 +1,4 @@
+use crate::perc::Perc;
 use crate::state::LeadState;
 use action::handle;
 use clock::{clock_gen, compute_period_us};
@@ -22,6 +23,7 @@ pub mod pattern;
 pub mod perc;
 pub mod sequence;
 mod state;
+mod trig;
 
 #[derive(Error, Debug)]
 pub enum TSeqError {
@@ -48,7 +50,7 @@ struct Channel {
 
 pub struct Step {}
 
-pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
+pub fn run(channel_id: u8, patterns: Vec<Pattern>, perc: Perc) -> Result<(), TSeqError> {
     let midi_out = MidiOutput::new("out")?;
     let out_ports = midi_out.ports();
     let out_port: &MidiOutputPort = match out_ports.len() {
@@ -88,7 +90,7 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>) -> Result<(), TSeqError> {
 
     let mut infos = (patterns[0].root, patterns[0].bpm, LeadState::None);
 
-    let state = State::new(patterns);
+    let state = State::new(patterns, perc);
 
     let state_arc = Arc::new(Mutex::new(state));
 

@@ -11,7 +11,7 @@ pub struct Pattern {
 }
 
 impl Pattern {
-    pub fn get_sequence(&mut self, seq_id: usize, stage: &Stage) -> &mut Box<dyn Sequence + Send> {
+    pub fn get_sequence(&mut self, seq_id: usize, stage: Stage) -> &mut Box<dyn Sequence + Send> {
         match stage {
             Stage::Break => &mut self.s_break[seq_id],
             Stage::Drop => &mut self.s_drop[seq_id],

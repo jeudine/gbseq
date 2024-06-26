@@ -44,6 +44,7 @@ fn main() {
     })
     .collect();
 
+    //TODO: maybe hardcode and print at the begining all the MIDI channels used
     match run(1, patterns) {
         Ok(_) => {}
         Err(e) => {

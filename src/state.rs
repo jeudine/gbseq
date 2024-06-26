@@ -1,7 +1,9 @@
 use crate::acid::Acid;
 use crate::lead::Lead;
 use crate::pattern::{Note, Pattern};
+use crate::perc::Perc;
 use crate::sequence::Sequence;
+use crate::trig::Trig;
 use rand::rngs::ThreadRng;
 use std::default::Default;
 use std::fmt;
@@ -61,44 +63,56 @@ impl Transition {
     }
 }
 
-#[derive(Default)]
 pub struct State {
     pub running: bool,
-    patterns: Vec<Pattern>,
-    cur_pattern_id: usize,
+    pub patterns: Vec<Pattern>,
+    pub cur_pattern_id: usize,
     pub sel_patt: Option<SelPatt>,
     pub sel_lead: Option<LeadState>,
-    stage: Stage,
+    pub stage: Stage,
     next_stage: Stage,
-    cur_seq_id: usize,
+    pub cur_seq_id: usize,
     oh: bool,
     ch: bool,
     pub oh_toggle: bool,
     pub ch_toggle: bool,
     transition: Transition,
     pub lead: Lead,
+    pub perc: Perc,
 }
 
 impl State {
-    pub fn new(patterns: Vec<Pattern>) -> Self {
-        let mut state = State::default();
-        state.patterns = patterns;
-        state.lead.acid = Acid::new();
-        state
+    pub fn new(patterns: Vec<Pattern>, perc: Perc) -> Self {
+        let acid = Acid::new(); //TODO: pass as a parameter
+        Self {
+            running: false,
+            patterns: patterns,
+            cur_pattern_id: 0,
+            sel_patt: None,
+            sel_lead: None,
+            stage: Stage::default(),
+            next_stage: Stage::default(),
+            cur_seq_id: 0,
+            oh: false,
+            ch: false,
+            oh_toggle: false,
+            ch_toggle: false,
+            transition: Transition::default(),
+            lead: Lead::new(acid),
+            perc,
+        }
     }
 
-    pub fn get_cur_sequence(
+    pub fn get_sequence(&mut self) -> &mut Box<dyn Sequence + Send> {
+        self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, self.stage)
+    }
+
+    //TODO: update percs
+    pub fn update(
         &mut self,
         step: u32,
         rng: &mut ThreadRng,
-    ) -> (
-        &mut Box<dyn Sequence + Send>,
-        Transition,
-        bool,
-        bool,
-        u8,
-        Option<(SelPatt, u8)>,
-    ) {
+    ) -> (Transition, bool, bool, Vec<Trig>, u8, Option<(SelPatt, u8)>) {
         let mut sel_patt: Option<(SelPatt, u8)> = None;
         if step % 96 == 0 {
             if self.next_stage != self.stage
@@ -149,11 +163,16 @@ impl State {
             }
         }
         let root = self.get_cur_root();
+        let perc_trigs = self.perc.get_trigs(step);
 
-        let sequence =
-            self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, &self.stage);
-
-        (sequence, self.transition, self.ch, self.oh, root, sel_patt)
+        (
+            self.transition,
+            self.ch,
+            self.oh,
+            perc_trigs,
+            root,
+            sel_patt,
+        )
     }
 
     pub fn set_next_stage(&mut self, stage: &Stage) {

@@ -1,4 +1,6 @@
+use crate::perc::Perc;
 use crate::state::Transition;
+use crate::trig::Trig;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
@@ -33,6 +35,7 @@ pub trait Sequence {
         rng: &mut ThreadRng,
         oh: bool,
         ch: bool,
+        perc: Vec<Trig>,
         root: u8,
         transition: Transition,
     );

@@ -6,9 +6,8 @@ use midir::MidiOutputConnection;
 
 pub const LEAD_CHANNEL: u8 = 3;
 
-#[derive(Default)]
 pub struct Lead {
-    pub acid: Acid,
+    acid: Acid,
     state: LeadState,
     prev_state: LeadState,
     end_note: bool,
@@ -16,6 +15,15 @@ pub struct Lead {
 }
 
 impl Lead {
+    pub fn new(acid: Acid) -> Self {
+        Self {
+            acid,
+            state: LeadState::default(),
+            prev_state: LeadState::default(),
+            end_note: false,
+            start_note: false,
+        }
+    }
     pub fn run(&mut self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
         if self.end_note {
             self.end_note = false;

@@ -1,11 +1,13 @@
 use crate::log_send;
 use crate::sequence::{param_value, start_note, SP2, SP3, SP4};
+use crate::trig::Trig;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const NB_TRIGS: usize = 16;
+pub const PERC_CHANNEL: u8 = 0;
 
 #[derive(Copy, Clone, Default)]
 struct Rythm {
@@ -20,17 +22,29 @@ pub struct Perc {
 }
 
 impl Perc {
-    fn run(&self, step: u32, conn: &mut MidiOutputConnection, channel_id: u8) {
+    pub fn get_trigs(&self, step: u32) -> Vec<Trig> {
         if step % 6 == 0 {
             let pattern = &self.patterns[self.cur_pattern_id];
             let t = step / 6;
             let t = t as usize % NB_TRIGS;
-            for (i, p) in pattern.iter().enumerate() {
-                if p.trigs[t] {
-                    log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.0)));
-                }
-            }
+            return pattern
+                .iter()
+                .enumerate()
+                .filter_map(|(i, p)| {
+                    if p.trigs[t] {
+                        Some(Trig {
+                            start_end: true,
+                            channel_id: PERC_CHANNEL,
+                            note: SP_ARRAY[i],
+                            velocity: param_value(0.0),
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect();
         }
+        vec![]
     }
 
     fn new_pattern(&mut self, rng: &mut ThreadRng) {
