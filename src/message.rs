@@ -12,68 +12,68 @@ pub const CONTINUE: u8 = 0xfb;
 pub const STOP: u8 = 0xfc;
 
 pub fn messages_gen(
-	channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
-	state_arc: &Arc<Mutex<State>>,
-	channel_id: u8,
+    channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
+    state_arc: &Arc<Mutex<State>>,
+    channel_id: u8,
 ) {
-	let (channel, cvar) = &**channel_arc;
-	let mut channel = channel.lock().unwrap();
-	let mut rng = rand::thread_rng();
-	let mut first = true;
-	loop {
-		channel = cvar.wait(channel).unwrap();
+    let (channel, cvar) = &**channel_arc;
+    let mut channel = channel.lock().unwrap();
+    let mut rng = rand::thread_rng();
+    let mut first = true;
+    loop {
+        channel = cvar.wait(channel).unwrap();
 
-		let mut state = state_arc.lock().unwrap();
+        let mut state = state_arc.lock().unwrap();
 
-		if first {
-			log_send(
-				&mut channel.conn,
-				&control_change(channel_id, CC_KIT_SEL, 0),
-			);
-			log_send(
-				&mut channel.conn,
-				&control_change(channel_id, CC_BANK_SEL, 0),
-			);
+        if first {
+            log_send(
+                &mut channel.conn,
+                &control_change(channel_id, CC_KIT_SEL, 0),
+            );
+            log_send(
+                &mut channel.conn,
+                &control_change(channel_id, CC_BANK_SEL, 0),
+            );
 
-			first = false;
-		}
+            first = false;
+        }
 
-		if !state.running {
-			continue;
-		}
+        if !state.running {
+            continue;
+        }
 
-		if channel.step == 95 {
-			log_send(&mut channel.conn, &[START]);
-		}
+        if channel.step == 95 {
+            log_send(&mut channel.conn, &[START]);
+        }
 
-		let (sequence, transition, ch, oh, root, sel_patt) =
-			state.get_cur_sequence(channel.step, &mut rng);
+        let (sequence, transition, ch, oh, root, sel_patt) =
+            state.get_cur_sequence(channel.step, &mut rng);
 
-		if let Some(s) = sel_patt {
-			// New bpm
-			let period = clock::compute_period_us(s.1);
-			channel.period_us = period;
-			channel.update_timestamp = true;
+        if let Some(s) = sel_patt {
+            // New bpm
+            let period = clock::compute_period_us(s.1);
+            channel.period_us = period;
+            channel.update_timestamp = true;
 
-			// Send message to select next kit
-			let message = match s.0 {
-				SelPatt::Prev => control_change(channel_id, 100, 0),
-				SelPatt::Next => control_change(channel_id, 101, 0),
-			};
-			log_send(&mut channel.conn, &message);
-		}
+            // Send message to select next kit
+            let message = match s.0 {
+                SelPatt::Prev => control_change(channel_id, 100, 0),
+                SelPatt::Next => control_change(channel_id, 101, 0),
+            };
+            log_send(&mut channel.conn, &message);
+        }
 
-		sequence.run(
-			channel.step,
-			&mut channel.conn,
-			channel_id,
-			&mut rng,
-			oh,
-			ch,
-			root,
-			transition,
-		);
+        sequence.run(
+            channel.step,
+            &mut channel.conn,
+            channel_id,
+            &mut rng,
+            oh,
+            ch,
+            root,
+            transition,
+        );
 
-		state.lead.run(channel.step, &mut channel.conn, root);
-	}
+        state.lead.run(channel.step, &mut channel.conn, root);
+    }
 }
