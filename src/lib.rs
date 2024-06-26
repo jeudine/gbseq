@@ -19,6 +19,7 @@ mod clock;
 mod lead;
 mod message;
 pub mod pattern;
+pub mod perc;
 pub mod sequence;
 mod state;
 
