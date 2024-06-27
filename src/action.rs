@@ -16,6 +16,7 @@ struct Action {
     stage: Option<Stage>,
     ch_toggle: bool,
     oh_toggle: bool,
+    perc_toggle: bool,
     pattern: Option<SelPatt>,
     lead: Option<LeadState>,
 }
@@ -54,6 +55,7 @@ pub fn handle(
 
     state.oh_toggle = action.oh_toggle;
     state.ch_toggle = action.ch_toggle;
+    state.perc_toggle = action.perc_toggle;
     state.sel_patt = action.pattern;
     state.sel_lead = action.lead;
 
@@ -67,12 +69,13 @@ impl Action {
             match c {
                 's' => action.system = Some(System::StartStop),
                 'q' => action.system = Some(System::Quit),
-                '1' => action.stage = Some(Stage::Break),
-                '2' => action.stage = Some(Stage::Drop),
-                '3' => action.stage = Some(Stage::HighPass),
-                '4' => action.stage = Some(Stage::Breakbeat),
-                '5' => action.ch_toggle = true,
-                '6' => action.oh_toggle = true,
+                '0' => action.stage = Some(Stage::Break),
+                '1' => action.stage = Some(Stage::Drop),
+                '2' => action.stage = Some(Stage::HighPass),
+                '3' => action.stage = Some(Stage::Breakbeat),
+                '4' => action.ch_toggle = true,
+                '5' => action.oh_toggle = true,
+                '6' => action.perc_toggle = true,
                 '7' => action.pattern = Some(SelPatt::Prev),
                 '8' => action.pattern = Some(SelPatt::Next),
                 '/' => action.lead = Some(LeadState::None),

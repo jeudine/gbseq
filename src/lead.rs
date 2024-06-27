@@ -1,20 +1,19 @@
 use crate::acid::Acid;
-use crate::log_send;
-use crate::sequence::{end_note, start_note};
 use crate::state::LeadState;
+use crate::trig::Trig;
+use crate::{LEAD0_CHANNEL, LEAD1_CHANNEL};
 use midir::MidiOutputConnection;
 
-pub const LEAD_CHANNEL: u8 = 3;
-
-pub struct Lead {
+pub struct Lead1 {
     acid: Acid,
     state: LeadState,
     prev_state: LeadState,
     end_note: bool,
     start_note: bool,
+    prev_psy_note: u8,
 }
 
-impl Lead {
+impl Lead1 {
     pub fn new(acid: Acid) -> Self {
         Self {
             acid,
@@ -22,33 +21,55 @@ impl Lead {
             prev_state: LeadState::default(),
             end_note: false,
             start_note: false,
+            prev_psy_note: 0,
         }
     }
-    pub fn run(&mut self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
+
+    //TODO: we can omit sending end_note on acid to create tension
+    pub fn get_trig(&mut self, step: u32, root: u8) -> Vec<Trig> {
+        let mut res = vec![];
         if self.end_note {
             self.end_note = false;
             match self.prev_state {
                 LeadState::Acid => {
                     let prev_note = self.acid.get_prev_note();
-                    log_send(conn, &end_note(LEAD_CHANNEL, prev_note.0, prev_note.1));
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD1_CHANNEL,
+                        note: prev_note.0,
+                        velocity: prev_note.1,
+                    });
                 }
                 LeadState::Psy => {
-                    log_send(conn, &end_note(LEAD_CHANNEL, root, 100));
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD1_CHANNEL,
+                        note: self.prev_psy_note,
+                        velocity: 100,
+                    });
                 }
                 _ => {}
             }
         }
         if self.start_note {
             self.start_note = false;
-            log_send(conn, &start_note(LEAD_CHANNEL, root, 100));
+            self.prev_psy_note = root;
+            res.push(Trig {
+                start_end: false,
+                channel_id: LEAD1_CHANNEL,
+                note: root,
+                velocity: 100,
+            });
         }
         match self.state {
-            LeadState::Acid => self.acid.trigger(step, conn, root),
+            LeadState::Acid => res.append(&mut self.acid.get_trig(step, root)),
             _ => {}
         }
+        res
     }
 
-    pub fn switch(&mut self, state: &LeadState) {
+    //TODO add rng for acid maybe
+    pub fn toggle(&mut self, state: &LeadState) {
         match self.state {
             LeadState::Acid | LeadState::Psy => self.end_note = true,
             _ => {}

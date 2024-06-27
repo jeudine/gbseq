@@ -1,13 +1,11 @@
-use crate::log_send;
-use crate::sequence::{param_value, start_note, SP2, SP3, SP4};
+use crate::sequence::{param_value, SP2, SP3, SP4};
 use crate::trig::Trig;
-use midir::MidiOutputConnection;
+use crate::PERC_CHANNEL;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const NB_TRIGS: usize = 16;
-pub const PERC_CHANNEL: u8 = 0;
 
 #[derive(Copy, Clone, Default)]
 struct Rythm {
@@ -19,10 +17,14 @@ struct Rythm {
 pub struct Perc {
     cur_pattern_id: usize,
     patterns: Vec<[Rythm; 3]>,
+    is_active: bool,
 }
 
 impl Perc {
     pub fn get_trigs(&self, step: u32) -> Vec<Trig> {
+        if !self.is_active {
+            return vec![];
+        }
         if step % 6 == 0 {
             let pattern = &self.patterns[self.cur_pattern_id];
             let t = step / 6;
@@ -47,8 +49,11 @@ impl Perc {
         vec![]
     }
 
-    fn new_pattern(&mut self, rng: &mut ThreadRng) {
-        self.cur_pattern_id = rng.gen_range(0..self.patterns.len());
+    pub fn toggle(&mut self, rng: &mut ThreadRng) {
+        self.is_active = !self.is_active;
+        if self.is_active {
+            self.cur_pattern_id = rng.gen_range(0..self.patterns.len());
+        }
     }
 
     fn new(patterns: Vec<[Rythm; 3]>) -> Self {
@@ -59,6 +64,7 @@ impl Perc {
         Self {
             cur_pattern_id: 0,
             patterns,
+            is_active: false,
         }
     }
 }

@@ -1,7 +1,6 @@
-use crate::lead::LEAD_CHANNEL;
-use crate::log_send;
 use crate::sequence::{end_note, start_note};
-use midir::MidiOutputConnection;
+use crate::trig::Trig;
+use crate::{log_send, LEAD1_CHANNEL};
 
 #[derive(Default, Clone, Copy)]
 pub enum Timing {
@@ -104,7 +103,8 @@ impl Acid {
         }
     }
 
-    pub fn trigger(&mut self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
+    pub fn get_trig(&mut self, step: u32, root: u8) -> Vec<Trig> {
+        let mut res = vec![];
         if step % 6 == 0 {
             let t = step / 6;
             let cur_trig = t as usize % self.patterns[self.cur_id].len();
@@ -122,18 +122,27 @@ impl Acid {
             let note = root + cur_note.note.0 + (cur_note.note.1 * 12) as u8;
             match cur_note.timing {
                 Note => {
-                    log_send(conn, &start_note(LEAD_CHANNEL, note, cur_note.vel));
+                    res.push(Trig {
+                        start_end: true,
+                        channel_id: LEAD1_CHANNEL,
+                        note,
+                        velocity: cur_note.vel,
+                    });
                     self.prev_note.1 = note;
                     self.prev_note.2 = cur_note.vel;
                 }
                 _ => {}
             }
 
+            // When there is a slide end the note after the previous one started
             if !no_end && cur_note.slide {
                 match prev_note.0 {
-                    Note | Tie => {
-                        log_send(conn, &end_note(LEAD_CHANNEL, prev_note.1, prev_note.2));
-                    }
+                    Note | Tie => res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD1_CHANNEL,
+                        note: prev_note.1,
+                        velocity: prev_note.2,
+                    }),
                     _ => {}
                 }
             }
@@ -151,16 +160,18 @@ impl Acid {
 
             if !no_end && !cur_note.slide {
                 match self.prev_note.0 {
-                    Note | Tie => {
-                        log_send(
-                            conn,
-                            &end_note(LEAD_CHANNEL, self.prev_note.1, self.prev_note.2),
-                        );
-                    }
+                    Note | Tie => res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD1_CHANNEL,
+                        note: self.prev_note.1,
+                        velocity: self.prev_note.2,
+                    }),
+
                     _ => {}
                 }
             }
         }
+        res
     }
 
     pub fn next_pattern(&mut self) {

@@ -12,9 +12,6 @@ pub struct HH {
     off_step_oh: u32,
 }
 
-pub const CH_CHANNEL: u8 = 1;
-pub const OH_CHANNEL: u8 = 2;
-
 impl HH {
     pub fn trigger_ch(&mut self, step: u32, conn: &mut MidiOutputConnection, root: u8) {
         if step % 6 == 0 {

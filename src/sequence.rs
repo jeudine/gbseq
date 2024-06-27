@@ -1,6 +1,4 @@
-use crate::perc::Perc;
-use crate::state::Transition;
-use crate::trig::Trig;
+use crate::state::StateData;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
@@ -31,16 +29,12 @@ pub trait Sequence {
         &mut self,
         step: u32,
         conn: &mut MidiOutputConnection,
-        channel_id: u8,
         rng: &mut ThreadRng,
-        oh: bool,
-        ch: bool,
-        perc: Vec<Trig>,
-        root: u8,
-        transition: Transition,
+        state_data: StateData,
     );
 }
 
+// TODO: put prameters relative to rample not in the lib
 pub const SP1: u8 = 48;
 pub const SP2: u8 = 49;
 pub const SP3: u8 = 50;

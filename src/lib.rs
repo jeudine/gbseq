@@ -25,6 +25,12 @@ pub mod sequence;
 mod state;
 mod trig;
 
+pub const PERC_CHANNEL: u8 = 0;
+pub const CH_CHANNEL: u8 = 1;
+pub const OH_CHANNEL: u8 = 2;
+pub const LEAD0_CHANNEL: u8 = 3;
+pub const LEAD1_CHANNEL: u8 = 4;
+
 #[derive(Error, Debug)]
 pub enum TSeqError {
     #[error("Failed to create a midi output [{}: {}]\n\t{0}", file!(), line!())]
