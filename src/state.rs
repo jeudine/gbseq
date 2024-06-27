@@ -1,4 +1,5 @@
 use crate::acid::Acid;
+use crate::hh::HH;
 use crate::lead::Lead1;
 use crate::pattern::{Note, Pattern};
 use crate::perc::Perc;
@@ -72,8 +73,7 @@ pub struct State {
     pub stage: Stage,
     next_stage: Stage,
     pub cur_seq_id: usize,
-    ch: bool,
-    oh: bool,
+    hh: HH,
     perc: Perc,
     lead1: Lead1,
     pub ch_toggle: bool,
@@ -96,15 +96,14 @@ impl State {
         let acid = Acid::new(); //TODO: pass as a parameter
         Self {
             running: false,
-            patterns: patterns,
+            patterns,
             cur_pattern_id: 0,
             sel_patt: None,
             sel_lead: None,
             stage: Stage::default(),
             next_stage: Stage::default(),
             cur_seq_id: 0,
-            ch: false,
-            oh: false,
+            hh: HH::default(),
             perc,
             lead1: Lead1::new(acid),
             oh_toggle: false,
@@ -152,24 +151,24 @@ impl State {
         (
             StateData {
                 transition: self.transition,
-                root_note: root_note,
-                hh: vec![],
+                root_note,
+                hh: self.hh.get_trigs(step, root_note, rng),
                 perc: self.perc.get_trigs(step),
                 lead0: vec![],
-                lead1: self.lead1.get_trig(step, root_note),
+                lead1: self.lead1.get_trigs(step, root_note),
             },
             sel_patt,
         )
     }
 
     pub fn toggle(&mut self, rng: &mut ThreadRng) {
-        if self.oh_toggle {
-            self.oh = !self.oh;
-            self.oh_toggle = false;
-        }
         if self.ch_toggle {
-            self.ch = !self.ch;
+            self.hh.toggle_ch();
             self.ch_toggle = false;
+        }
+        if self.oh_toggle {
+            self.hh.toggle_oh();
+            self.oh_toggle = false;
         }
         if self.perc_toggle {
             self.perc.toggle(rng);

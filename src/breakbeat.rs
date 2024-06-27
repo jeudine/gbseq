@@ -5,8 +5,7 @@ use tseq::sequence::{
     cc_parameter, control_change, param_value, start_note, Sequence, CC_FREEZE, CC_LAYER,
     CC_LENGTH, CC_LEVEL, SP1, SP2, SP3, SP4,
 };
-use tseq::Stage;
-use tseq::{log_send, Transition};
+use tseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
 
 const TRIG_PROBA: f64 = 0.7;
 const FREEZE_PROBA: f64 = 0.7;
@@ -24,105 +23,66 @@ struct Rythm {
 }
 
 #[derive(Clone, Default)]
-pub struct Breakbeat0 {
-    cur_pattern_id: usize,
-    level: u8,
-    doubled: bool,
-    patterns: Vec<[Rythm; 3]>,
-}
+pub struct Breakbeat0 {}
 
 impl Sequence for Breakbeat0 {
     fn run(
         &mut self,
         step: u32,
         conn: &mut MidiOutputConnection,
-        channel_id: u8,
         rng: &mut ThreadRng,
-        oh: bool,
-        ch: bool,
-        _root: u8,
-        transition: Transition,
+        state_data: StateData,
     ) {
         let t = step % 96;
 
+        let transition = state_data.transition;
         if t == 0 && transition.is_transition_in() {
             log_send(
                 conn,
-                &control_change(channel_id, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[2]),
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[2]),
             );
-            self.cur_pattern_id = rng.gen_range(0..self.patterns.len());
         }
 
         // Kicks
-        if oh {
-            if t == 0 || t == 36 {
+        if t == 0 || t == 36 {
+            if let Transition::Out(Stage::Drop) = transition {
+            } else {
+                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            }
+        }
+
+        if t == 12 || t == 48 {
+            if rng.gen_bool(DOUBLED_PROBA) {
                 if let Transition::Out(Stage::Drop) = transition {
                 } else {
-                    log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
-                }
-            }
-
-            if t == 12 || t == 48 {
-                if rng.gen_bool(DOUBLED_PROBA) {
-                    if let Transition::Out(Stage::Drop) = transition {
-                    } else {
-                        log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
-                    }
-                    self.doubled = true;
-                } else {
-                    self.doubled = false;
-                }
-            }
-
-            if let Transition::Out(Stage::Drop) = transition {
-                if t == 0 {
-                    log_send(
-                        conn,
-                        &control_change(channel_id, cc_parameter(CC_LAYER, 0), 0),
-                    );
-
-                    log_send(conn, &start_note(channel_id, SP1, param_value(0.6)));
-                } else if t == 24 {
-                    log_send(conn, &start_note(channel_id, SP1, param_value(0.5)));
-                } else if t == 48 {
-                    log_send(conn, &start_note(channel_id, SP1, param_value(0.4)));
-                } else if t == 84 {
-                    log_send(
-                        conn,
-                        &control_change(channel_id, cc_parameter(CC_LAYER, 0), 1 << 6),
-                    );
-                    log_send(
-                        conn,
-                        &control_change(channel_id, cc_parameter(CC_LEVEL, 0), 63),
-                    );
-
-                    log_send(conn, &start_note(channel_id, SP1, param_value(0.0)));
+                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
                 }
             }
         }
 
-        // Percusions
-        if ch {
-            let pattern = &self.patterns[self.cur_pattern_id];
-            if step % 6 == 0 {
-                let t = step / 6;
-                let t = t as usize % NB_TRIGS;
-                for (i, p) in pattern.iter().enumerate() {
-                    if p.trigs[t] {
-                        if let Transition::Out(Stage::Drop) = transition {
-                            log_send(
-                                conn,
-                                &start_note(
-                                    channel_id,
-                                    SP_ARRAY[i],
-                                    param_value(-0.5 - 0.5 * t as f32 / 96.0),
-                                ),
-                            );
-                        } else {
-                            log_send(conn, &start_note(channel_id, SP_ARRAY[i], param_value(0.0)));
-                        }
-                    }
-                }
+        if let Transition::Out(Stage::Drop) = transition {
+            if t == 0 {
+                log_send(
+                    conn,
+                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
+                );
+
+                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.6)));
+            } else if t == 24 {
+                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.5)));
+            } else if t == 48 {
+                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.4)));
+            } else if t == 84 {
+                log_send(
+                    conn,
+                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                );
+                log_send(
+                    conn,
+                    &control_change(PERC_CHANNEL, cc_parameter(CC_LEVEL, 0), 63),
+                );
+
+                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
             }
         }
     }

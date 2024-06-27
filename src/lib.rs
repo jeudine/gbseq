@@ -1,5 +1,6 @@
 use crate::perc::Perc;
 use crate::state::LeadState;
+pub use crate::state::StateData;
 use action::handle;
 use clock::{clock_gen, compute_period_us};
 use message::messages_gen;
@@ -14,9 +15,11 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::thread::spawn;
 use std::time::Instant;
 use thiserror::Error;
+pub use trig::trigger;
 pub mod acid;
 mod action;
 mod clock;
+mod hh;
 mod lead;
 mod message;
 pub mod pattern;

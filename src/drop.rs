@@ -1,4 +1,3 @@
-use crate::hh::HH;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::{

@@ -2,7 +2,6 @@ use crate::acid::Acid;
 use crate::state::LeadState;
 use crate::trig::Trig;
 use crate::{LEAD0_CHANNEL, LEAD1_CHANNEL};
-use midir::MidiOutputConnection;
 
 pub struct Lead1 {
     acid: Acid,
@@ -25,8 +24,7 @@ impl Lead1 {
         }
     }
 
-    //TODO: we can omit sending end_note on acid to create tension
-    pub fn get_trig(&mut self, step: u32, root: u8) -> Vec<Trig> {
+    pub fn get_trigs(&mut self, step: u32, root: u8) -> Vec<Trig> {
         let mut res = vec![];
         if self.end_note {
             self.end_note = false;
