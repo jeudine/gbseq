@@ -67,6 +67,10 @@ impl Perc {
             is_active: false,
         }
     }
+
+    pub fn on(&self) -> bool {
+        self.is_active
+    }
 }
 
 impl Rythm {

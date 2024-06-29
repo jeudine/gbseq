@@ -84,7 +84,16 @@ impl Lead1 {
         self.state = *state;
     }
 
+    // TODO: If we don't need remove
     pub fn get_state(&self) -> LeadState {
         self.state
+    }
+
+    pub fn on(&self) -> bool {
+        match self.state {
+            LeadState::Acid => true,
+            LeadState::Psy => true,
+            _ => false,
+        }
     }
 }

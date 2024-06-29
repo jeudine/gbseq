@@ -79,4 +79,12 @@ impl HH {
     pub fn toggle_ch(&mut self) {
         self.ch_active = !self.ch_active;
     }
+
+    pub fn ch_on(&self) -> bool {
+        self.ch_active
+    }
+
+    pub fn oh_on(&self) -> bool {
+        self.oh_active
+    }
 }

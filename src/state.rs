@@ -89,6 +89,12 @@ pub struct StateData {
     pub perc: Vec<Trig>,
     pub lead0: Vec<Trig>,
     pub lead1: Vec<Trig>,
+
+    pub ch_on: bool,
+    pub oh_on: bool,
+    pub perc_on: bool,
+    pub lead0_on: bool,
+    pub lead1_on: bool,
 }
 
 impl State {
@@ -97,6 +103,8 @@ impl State {
         Self {
             running: false,
             patterns,
+            perc,
+            lead1: Lead1::new(acid),
             cur_pattern_id: 0,
             sel_patt: None,
             sel_lead: None,
@@ -104,8 +112,6 @@ impl State {
             next_stage: Stage::default(),
             cur_seq_id: 0,
             hh: HH::default(),
-            perc,
-            lead1: Lead1::new(acid),
             oh_toggle: false,
             ch_toggle: false,
             perc_toggle: false,
@@ -156,6 +162,11 @@ impl State {
                 perc: self.perc.get_trigs(step),
                 lead0: vec![],
                 lead1: self.lead1.get_trigs(step, root_note),
+                ch_on: self.hh.ch_on(),
+                oh_on: self.hh.oh_on(),
+                lead0_on: false,
+                lead1_on: self.lead1.on(),
+                perc_on: self.perc.on(),
             },
             sel_patt,
         )
