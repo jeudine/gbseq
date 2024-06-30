@@ -52,6 +52,7 @@ impl HH {
         None
     }
 
+    //TODO: try different OH patterns
     fn get_trigs_oh(&mut self, step: u32, root: u8, rng: &mut ThreadRng) -> Option<Trig> {
         if step % 24 == 12 || (step % 96 == 72 && rng.gen_bool(DOUBLED_PROBA)) {
             self.off_step_oh = step + 6;
@@ -64,7 +65,7 @@ impl HH {
         }
         if step == self.off_step_oh {
             return Some(Trig {
-                start_end: true,
+                start_end: false,
                 channel_id: OH_CHANNEL,
                 note: root,
                 velocity: 100,
