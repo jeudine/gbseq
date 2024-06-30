@@ -2,27 +2,13 @@ use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use tseq::sequence::{
-    cc_parameter, control_change, param_value, start_note, Sequence, CC_FREEZE, CC_LAYER,
-    CC_LENGTH, CC_LEVEL, SP1, SP2, SP3, SP4,
+    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, CC_LEVEL, SP1,
 };
 use tseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
 
-const TRIG_PROBA: f64 = 0.7;
-const FREEZE_PROBA: f64 = 0.7;
-
 const DOUBLED_PROBA: f64 = 0.33;
 
-const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
-const LAYER_ARRAY: [u8; 3] = [0x00, 0x40, 0x60];
-const NB_TRIGS: usize = 16;
-
-#[derive(Copy, Clone, Default)]
-struct Rythm {
-    trigs: [bool; NB_TRIGS],
-    k: u8,
-}
-
-#[derive(Clone, Default)]
+#[derive(Clone, Copy, Default)]
 pub struct Breakbeat0 {}
 
 impl Sequence for Breakbeat0 {
@@ -39,7 +25,7 @@ impl Sequence for Breakbeat0 {
         if t == 0 && transition.is_transition_in() {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), LAYER_ARRAY[2]),
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 0x60),
             );
         }
 

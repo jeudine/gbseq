@@ -8,9 +8,8 @@ const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const NB_TRIGS: usize = 16;
 
 #[derive(Copy, Clone, Default)]
-struct Rythm {
+pub struct Rythm {
     trigs: [bool; NB_TRIGS],
-    k: u8,
 }
 
 #[derive(Clone)]
@@ -56,7 +55,7 @@ impl Perc {
         }
     }
 
-    fn new(patterns: Vec<[Rythm; 3]>) -> Self {
+    pub fn new(patterns: Vec<[Rythm; 3]>) -> Self {
         let len = patterns.len();
         if len == 0 {
             panic!("len of patterns is 0");
@@ -74,7 +73,7 @@ impl Perc {
 }
 
 impl Rythm {
-    fn compute_euclidean_rythm(_k: u8) -> Self {
+    pub fn compute_euclidean_rythm(_k: u8) -> Self {
         let (k, compl) = if _k > NB_TRIGS as u8 / 2 {
             (NB_TRIGS as u8 - _k, true)
         } else {
@@ -174,6 +173,6 @@ impl Rythm {
             }
         }
 
-        Self { trigs: seq, k: _k }
+        Self { trigs: seq }
     }
 }

@@ -1,4 +1,5 @@
-use crate::perc::Perc;
+pub use crate::perc::Perc;
+pub use crate::perc::Rythm;
 use crate::state::LeadState;
 pub use crate::state::StateData;
 use action::handle;
@@ -24,7 +25,7 @@ mod hh;
 mod lead;
 mod message;
 pub mod pattern;
-pub mod perc;
+mod perc;
 pub mod sequence;
 mod state;
 mod trig;
