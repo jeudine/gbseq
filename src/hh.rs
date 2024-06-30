@@ -12,17 +12,19 @@ pub struct HH {
     off_step_oh: u32,
     ch_active: bool,
     oh_active: bool,
+    last_oh_bar: bool,
+    last_ch_bar: bool,
 }
 
 impl HH {
     pub fn get_trigs(&mut self, step: u32, root: u8, rng: &mut ThreadRng) -> Vec<Trig> {
         let mut res = vec![];
-        if self.ch_active {
+        if self.ch_active || self.last_ch_bar {
             if let Some(t) = self.get_trigs_ch(step, root) {
                 res.push(t)
             }
         }
-        if self.oh_active {
+        if self.oh_active || self.last_oh_bar {
             if let Some(t) = self.get_trigs_oh(step, root, rng) {
                 res.push(t)
             }
@@ -76,10 +78,22 @@ impl HH {
 
     pub fn toggle_oh(&mut self) {
         self.oh_active = !self.oh_active;
+        if !self.oh_active {
+            self.last_oh_bar = true;
+        }
+    }
+
+    // To make the hh stay one bar longer after we turn them off
+    pub fn start_bar(&mut self) {
+        self.last_oh_bar = false;
+        self.last_ch_bar = false;
     }
 
     pub fn toggle_ch(&mut self) {
         self.ch_active = !self.ch_active;
+        if !self.ch_active {
+            self.last_ch_bar = true;
+        }
     }
 
     pub fn ch_on(&self) -> bool {
@@ -93,13 +107,15 @@ impl HH {
 
 pub fn only_trigger_ch(trigs: &Vec<Trig>, conn: &mut MidiOutputConnection) {
     for t in trigs {
-        if t.channel_id == CH_CHANNEL {}
-        trigger_single(conn, t)
+        if t.channel_id == CH_CHANNEL {
+            trigger_single(conn, t)
+        }
     }
 }
 pub fn only_trigger_oh(trigs: &Vec<Trig>, conn: &mut MidiOutputConnection) {
     for t in trigs {
-        if t.channel_id == OH_CHANNEL {}
-        trigger_single(conn, t)
+        if t.channel_id == OH_CHANNEL {
+            trigger_single(conn, t)
+        }
     }
 }
