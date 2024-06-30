@@ -1,5 +1,6 @@
-use crate::trig::Trig;
+use crate::trig::{trigger_single, Trig};
 use crate::{CH_CHANNEL, OH_CHANNEL};
+use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
@@ -86,5 +87,18 @@ impl HH {
 
     pub fn oh_on(&self) -> bool {
         self.oh_active
+    }
+}
+
+pub fn only_trigger_ch(trigs: &Vec<Trig>, conn: &mut MidiOutputConnection) {
+    for t in trigs {
+        if t.channel_id == CH_CHANNEL {}
+        trigger_single(conn, t)
+    }
+}
+pub fn only_trigger_oh(trigs: &Vec<Trig>, conn: &mut MidiOutputConnection) {
+    for t in trigs {
+        if t.channel_id == OH_CHANNEL {}
+        trigger_single(conn, t)
     }
 }

@@ -11,10 +11,14 @@ pub struct Trig {
 
 pub fn trigger(conn: &mut MidiOutputConnection, trigs: &Vec<Trig>) {
     for t in trigs {
-        if t.start_end {
-            log_send(conn, &start_note(t.channel_id, t.note, t.velocity));
-        } else {
-            log_send(conn, &end_note(t.channel_id, t.note, t.velocity));
-        }
+        trigger_single(conn, t)
+    }
+}
+
+pub fn trigger_single(conn: &mut MidiOutputConnection, t: &Trig) {
+    if t.start_end {
+        log_send(conn, &start_note(t.channel_id, t.note, t.velocity));
+    } else {
+        log_send(conn, &end_note(t.channel_id, t.note, t.velocity));
     }
 }

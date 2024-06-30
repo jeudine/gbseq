@@ -17,6 +17,7 @@ use std::time::Instant;
 use thiserror::Error;
 pub use trig::trigger;
 pub mod acid;
+pub use hh::{only_trigger_ch, only_trigger_oh};
 mod action;
 mod clock;
 mod hh;

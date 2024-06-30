@@ -5,10 +5,12 @@ use rand::{
     Rng,
 };
 use tseq::sequence::{
-    cc_parameter, control_change, end_note, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH,
-    CC_LEVEL, SP1,
+    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH, CC_LEVEL,
+    SP1,
 };
-use tseq::{log_send, Stage, StateData, Transition, PERC_CHANNEL};
+use tseq::{
+    log_send, only_trigger_ch, only_trigger_oh, Stage, StateData, Transition, PERC_CHANNEL,
+};
 
 const SKIPPED_PROBA: f64 = 0.2;
 const DOUBLED_PROBA: f64 = 0.2;
@@ -52,6 +54,7 @@ impl Sequence for Drop0 {
         let ch = state_data.ch_on;
         let oh = state_data.oh_on;
 
+        // TODO: add half bar transition
         if t == 0 {
             log_send(
                 conn,
@@ -98,30 +101,9 @@ impl Sequence for Drop0 {
 
         if let Some(h) = self.hh_toggle {
             if h == HHToggle::BarToggle {
-                if t == 0 {
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.6)));
-                } else if t == 24 {
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.5)));
-                } else if t == 48 {
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.4)));
-                } else if t == 84 {
-                    log_send(
-                        conn,
-                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
-                    );
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
-                }
+                Drop0::bar_toggle(t, conn);
             } else {
-                if t == 0 || t == 24 || t == 48 {
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
-                }
-                if t == 84 {
-                    log_send(
-                        conn,
-                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
-                    );
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
-                }
+                Drop0::fast_toggle(t, conn);
             }
         } else {
             if t == 0 || t == 24 || t == 48 {
@@ -156,23 +138,48 @@ impl Sequence for Drop0 {
             }
         }
 
-        if oh ^ self.oh_toggle {
-            if t < 72 || !self.oh_toggle {
-                //TODO
-            }
+        if (oh ^ self.oh_toggle) && (t < 72 || !self.oh_toggle) {
+            only_trigger_oh(&state_data.hh, conn);
         }
-        if ch ^ self.ch_toggle {
-            if t < 72 || !self.ch_toggle {
-                //TODO
-            }
+        if (ch ^ self.ch_toggle) && (t < 72 || !self.ch_toggle) {
+            only_trigger_ch(&state_data.hh, conn);
+        }
+    }
+}
+
+impl Drop0 {
+    fn bar_toggle(t: u32, conn: &mut MidiOutputConnection) {
+        if t == 0 {
+            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.6)));
+        } else if t == 24 {
+            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.5)));
+        } else if t == 48 {
+            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.4)));
+        } else if t == 84 {
+            log_send(
+                conn,
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+            );
+            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+        }
+    }
+
+    fn fast_toggle(t: u32, conn: &mut MidiOutputConnection) {
+        if t == 0 || t == 24 || t == 48 {
+            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+        }
+        if t == 84 {
+            log_send(
+                conn,
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+            );
+            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
         }
     }
 }
 
 #[derive(Copy, Clone, Default)]
-pub struct HighPass0 {
-    hh: HH,
-}
+pub struct HighPass0 {}
 
 impl Sequence for HighPass0 {
     fn run(
