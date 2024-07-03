@@ -1,4 +1,5 @@
 use crate::acid::Acid;
+use crate::scale::Scale;
 use crate::state::LeadState;
 use crate::trig::Trig;
 use crate::{LEAD0_CHANNEL, LEAD1_CHANNEL};
@@ -67,7 +68,7 @@ impl Lead1 {
     }
 
     //TODO add rng for acid maybe
-    pub fn toggle(&mut self, state: &LeadState) {
+    pub fn toggle(&mut self, state: LeadState, scale: Scale) {
         match self.state {
             LeadState::Acid | LeadState::Psy => self.end_note = true,
             _ => {}
@@ -77,11 +78,11 @@ impl Lead1 {
         }
 
         if let LeadState::Acid = state {
-            self.acid.next_pattern();
+            self.acid.next_pattern(scale);
         }
 
         self.prev_state = self.state;
-        self.state = *state;
+        self.state = state;
     }
 
     // TODO: If we don't need remove

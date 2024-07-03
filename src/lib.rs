@@ -26,9 +26,12 @@ mod lead;
 mod message;
 pub mod pattern;
 mod perc;
+mod scale;
 pub mod sequence;
 mod state;
 mod trig;
+pub use acid::{Acid, AcidLead, Timing};
+pub use scale::Scale;
 
 pub const PERC_CHANNEL: u8 = 0;
 pub const CH_CHANNEL: u8 = 1;
@@ -61,7 +64,12 @@ struct Channel {
 
 pub struct Step {}
 
-pub fn run(channel_id: u8, patterns: Vec<Pattern>, perc: Perc) -> Result<(), TSeqError> {
+pub fn run(
+    channel_id: u8,
+    patterns: Vec<Pattern>,
+    perc: Perc,
+    acid: Acid,
+) -> Result<(), TSeqError> {
     let midi_out = MidiOutput::new("out")?;
     let out_ports = midi_out.ports();
     let out_port: &MidiOutputPort = match out_ports.len() {
@@ -101,7 +109,7 @@ pub fn run(channel_id: u8, patterns: Vec<Pattern>, perc: Perc) -> Result<(), TSe
 
     let mut infos = (patterns[0].root, patterns[0].bpm, LeadState::None);
 
-    let state = State::new(patterns, perc);
+    let state = State::new(patterns, perc, acid);
 
     let state_arc = Arc::new(Mutex::new(state));
 

@@ -3,6 +3,7 @@ use crate::hh::HH;
 use crate::lead::Lead1;
 use crate::pattern::{Note, Pattern};
 use crate::perc::Perc;
+use crate::scale::Scale;
 use crate::sequence::Sequence;
 use crate::trig::Trig;
 use rand::rngs::ThreadRng;
@@ -80,6 +81,7 @@ pub struct State {
     pub oh_toggle: bool,
     pub perc_toggle: bool,
     transition: Transition,
+    scale: Scale,
 }
 
 pub struct StateData {
@@ -98,8 +100,7 @@ pub struct StateData {
 }
 
 impl State {
-    pub fn new(patterns: Vec<Pattern>, perc: Perc) -> Self {
-        let acid = Acid::new(); //TODO: pass as a parameter
+    pub fn new(patterns: Vec<Pattern>, perc: Perc, acid: Acid) -> Self {
         Self {
             running: false,
             patterns,
@@ -116,6 +117,7 @@ impl State {
             ch_toggle: false,
             perc_toggle: false,
             transition: Transition::default(),
+            scale: Scale::default(),
         }
     }
 
@@ -187,7 +189,7 @@ impl State {
             self.perc_toggle = false;
         }
         if let Some(l) = self.sel_lead {
-            self.lead1.toggle(&l);
+            self.lead1.toggle(l, self.scale);
             self.sel_lead = None;
         }
     }

@@ -7,19 +7,13 @@ use breakbeat::Breakbeat0;
 use drop::Drop0;
 use high_pass::HighPass0;
 use tseq::sequence::Sequence;
-use tseq::Note;
-use tseq::{run, Pattern, Perc, Rythm};
+use tseq::{run, Acid, AcidLead, Note, Pattern, Perc, Rythm, Scale::*, Timing::*};
 
 fn main() {
     let break0 = Break0::default();
     let highpass0 = HighPass0::default();
     let drop0 = Drop0::default();
-    let mut breakbeat0 = Breakbeat0::default();
-    /*
-        breakbeat0.push_rythm([3, 2, 1]);
-        breakbeat0.push_rythm([4, 3, 1]);
-        breakbeat0.push_rythm([5, 3, 2]);
-    */
+    let breakbeat0 = Breakbeat0::default();
 
     let patterns = [
         (155, Note::C),
@@ -46,6 +40,7 @@ fn main() {
     })
     .collect();
 
+    // Percs
     let er_1 = Rythm::compute_euclidean_rythm(1);
     let er_2 = Rythm::compute_euclidean_rythm(2);
     let er_3 = Rythm::compute_euclidean_rythm(3);
@@ -58,8 +53,91 @@ fn main() {
         [er_5, er_3, er_2],
     ]);
 
-    //TODO: maybe hardcode and print at the begining all the MIDI channels used
-    match run(1, patterns, perc) {
+    // Acid
+    let acid_0 = AcidLead::new(
+        vec![
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((11, 0), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((8, 0), 127, true, Note),
+            ((0, 0), 89, false, Tie),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+        ],
+        vec![HarmonicMinor],
+    );
+
+    let acid_1 = AcidLead::new(
+        vec![
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, true, Note),
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((11, 0), 127, true, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((8, 0), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((11, 0), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 1), 127, true, Note),
+            ((0, 0), 89, false, Tie),
+            ((0, 0), 89, false, Note),
+        ],
+        vec![HarmonicMinor],
+    );
+
+    let acid_2 = AcidLead::new(
+        vec![
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, -1), 89, false, Note),
+            ((0, 1), 127, true, Note),
+            ((0, 0), 89, false, Tie),
+            ((0, 0), 89, false, Rest),
+        ],
+        vec![NaturalMinor, HarmonicMinor, PhrygianMode],
+    );
+
+    let acid_3 = AcidLead::new(
+        vec![
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((8, 0), 89, false, Note),
+            ((11, 0), 89, false, Note),
+            ((12, 0), 127, false, Note),
+            ((11, 0), 89, false, Note),
+            ((8, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+        ],
+        vec![HarmonicMinor],
+    );
+
+    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3]);
+
+    //TODO: print at the begining all the MIDI channels used
+    match run(1, patterns, perc, acid) {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[ERROR] {}", e);

@@ -1,6 +1,8 @@
-use crate::sequence::{end_note, start_note};
+use crate::scale::Scale;
 use crate::trig::Trig;
-use crate::{log_send, LEAD1_CHANNEL};
+use crate::LEAD1_CHANNEL;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 #[derive(Default, Clone, Copy)]
 pub enum Timing {
@@ -12,7 +14,8 @@ pub enum Timing {
 
 use Timing::*;
 
-#[derive(Default)]
+//TODO: Add triplets
+#[derive(Default, Copy, Clone)]
 pub struct AcidTrig {
     note: (u8, i8),
     vel: u8,
@@ -20,84 +23,47 @@ pub struct AcidTrig {
     timing: Timing,
 }
 
+#[derive(Default, Clone)]
+pub struct AcidLead {
+    pattern: Vec<AcidTrig>,
+    scales: Vec<Scale>,
+    played: bool,
+}
+
 #[derive(Default)]
 pub struct Acid {
-    patterns: Vec<Vec<AcidTrig>>,
+    patterns: Vec<AcidLead>,
     cur_id: usize,
     prev_note: (Timing, u8, u8),
 }
 
-impl Acid {
-    pub fn new() -> Self {
-        let pattern_0 = Self::new_pattern(vec![
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((11, 0), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((8, 0), 127, true, Note),
-            ((0, 0), 89, false, Tie),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-        ]);
-
-        let pattern_1 = Self::new_pattern(vec![
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, true, Note),
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((11, 0), 127, true, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((8, 0), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((11, 0), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 1), 127, true, Note),
-            ((0, 0), 89, false, Tie),
-            ((0, 0), 89, false, Note),
-        ]);
-
-        let pattern_2 = Self::new_pattern(vec![
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, -1), 89, false, Note),
-            ((0, 1), 127, true, Note),
-            ((0, 0), 89, false, Tie),
-            ((0, 0), 89, false, Rest),
-        ]);
-        let pattern_3 = Self::new_pattern(vec![
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((8, 0), 89, false, Note),
-            ((11, 0), 89, false, Note),
-            ((12, 0), 127, false, Note),
-            ((11, 0), 89, false, Note),
-            ((8, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 1), 127, false, Note),
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Note),
-        ]);
+impl AcidLead {
+    pub fn new(pattern: Vec<((u8, i8), u8, bool, Timing)>, scales: Vec<Scale>) -> Self {
+        let pattern = pattern
+            .iter()
+            .map(|u| AcidTrig {
+                note: u.0,
+                vel: u.1,
+                slide: u.2,
+                timing: u.3,
+            })
+            .collect();
 
         Self {
-            patterns: vec![pattern_0, pattern_2, pattern_1, pattern_3],
+            pattern,
+            scales,
+            played: false,
+        }
+    }
+}
+
+impl Acid {
+    pub fn new(patterns: Vec<AcidLead>) -> Self {
+        //TODO: check that we have at least one pattern from each scale
+        let mut patterns = patterns.clone();
+        patterns.shuffle(&mut thread_rng());
+        Self {
+            patterns,
             cur_id: 0,
             prev_note: (Rest, 0, 0),
         }
@@ -105,11 +71,12 @@ impl Acid {
 
     pub fn get_trig(&mut self, step: u32, root: u8) -> Vec<Trig> {
         let mut res = vec![];
+        let pattern = &self.patterns[self.cur_id].pattern;
         if step % 6 == 0 {
             let t = step / 6;
-            let cur_trig = t as usize % self.patterns[self.cur_id].len();
-            self.prev_note.0 = self.patterns[self.cur_id][cur_trig].timing;
-            let cur_note = &self.patterns[self.cur_id][cur_trig];
+            let cur_trig = t as usize % pattern.len();
+            self.prev_note.0 = pattern[cur_trig].timing;
+            let cur_note = &pattern[cur_trig];
 
             let no_end = if let Tie = cur_note.timing {
                 true
@@ -148,9 +115,9 @@ impl Acid {
             }
         } else if step % 6 == 3 {
             let t = (step + 3) / 6;
-            let cur_trig = t as usize % self.patterns[self.cur_id].len();
-            self.prev_note.0 = self.patterns[self.cur_id][cur_trig].timing;
-            let cur_note = &self.patterns[self.cur_id][cur_trig];
+            let cur_trig = t as usize % pattern.len();
+            self.prev_note.0 = pattern[cur_trig].timing;
+            let cur_note = &pattern[cur_trig];
 
             let no_end = if let Tie = cur_note.timing {
                 true
@@ -174,20 +141,38 @@ impl Acid {
         res
     }
 
-    pub fn next_pattern(&mut self) {
+    pub fn next_pattern(&mut self, scale: Scale) {
         let len = self.patterns.len();
-        self.cur_id = (self.cur_id + 1) % len;
-    }
+        let mut next_id = None;
+        for i in 0..len {
+            let pattern = &mut self.patterns[i];
+            if !pattern.played && pattern.scales.contains(&scale) {
+                next_id = Some(i);
+                break;
+            }
+        }
+        self.cur_id = if let Some(id) = next_id {
+            id
+        } else {
+            let mut next_id = None;
+            for i in 0..len {
+                let pattern = &mut self.patterns[i];
+                pattern.played = false;
+                if let None = next_id {
+                    if pattern.scales.contains(&scale) {
+                        next_id = Some(i);
+                    }
+                }
+            }
 
-    pub fn new_pattern(x: Vec<((u8, i8), u8, bool, Timing)>) -> Vec<AcidTrig> {
-        x.iter()
-            .map(|u| AcidTrig {
-                note: u.0,
-                vel: u.1,
-                slide: u.2,
-                timing: u.3,
-            })
-            .collect()
+            match next_id {
+                Some(id) => id,
+                None => panic!("No Acid line in {}", scale),
+            }
+        };
+
+        let pattern = &mut self.patterns[self.cur_id];
+        pattern.played = true;
     }
 
     pub fn get_prev_note(&self) -> (u8, u8) {
