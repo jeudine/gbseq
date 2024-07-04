@@ -1,24 +1,50 @@
 use crate::acid::Acid;
+use crate::arp::Arp;
 use crate::scale::Scale;
-use crate::state::LeadState;
+use crate::state::{Lead0State, Lead1State};
 use crate::trig::Trig;
 use crate::{LEAD0_CHANNEL, LEAD1_CHANNEL};
 
+pub struct Lead0 {
+    arp: Arp,
+    state: Lead0State,
+    prev_state: Lead0State,
+    end_note: bool,
+    start_note: bool,
+    prev_atm_note: u8,
+}
+
 pub struct Lead1 {
     acid: Acid,
-    state: LeadState,
-    prev_state: LeadState,
+    state: Lead1State,
+    prev_state: Lead1State,
     end_note: bool,
     start_note: bool,
     prev_psy_note: u8,
 }
 
+impl Lead0 {
+    pub fn new(arp: Arp) -> Self {
+        Self {
+            arp,
+            state: Lead0State::default(),
+            prev_state: Lead0State::default(),
+            end_note: false,
+            start_note: false,
+            prev_atm_note: 0,
+        }
+    }
+
+    pub fn get_state(&self) -> Lead0State {
+        self.state
+    }
+}
 impl Lead1 {
     pub fn new(acid: Acid) -> Self {
         Self {
             acid,
-            state: LeadState::default(),
-            prev_state: LeadState::default(),
+            state: Lead1State::default(),
+            prev_state: Lead1State::default(),
             end_note: false,
             start_note: false,
             prev_psy_note: 0,
@@ -30,7 +56,7 @@ impl Lead1 {
         if self.end_note {
             self.end_note = false;
             match self.prev_state {
-                LeadState::Acid => {
+                Lead1State::Acid => {
                     let prev_note = self.acid.get_prev_note();
                     res.push(Trig {
                         start_end: false,
@@ -39,7 +65,7 @@ impl Lead1 {
                         velocity: prev_note.1,
                     });
                 }
-                LeadState::Psy => {
+                Lead1State::Psy => {
                     res.push(Trig {
                         start_end: false,
                         channel_id: LEAD1_CHANNEL,
@@ -61,23 +87,22 @@ impl Lead1 {
             });
         }
         match self.state {
-            LeadState::Acid => res.append(&mut self.acid.get_trig(step, root)),
+            Lead1State::Acid => res.append(&mut self.acid.get_trig(step, root)),
             _ => {}
         }
         res
     }
 
-    //TODO add rng for acid maybe
-    pub fn toggle(&mut self, state: LeadState, scale: Scale) {
+    pub fn toggle(&mut self, state: Lead1State, scale: Scale) {
         match self.state {
-            LeadState::Acid | LeadState::Psy => self.end_note = true,
+            Lead1State::Acid | Lead1State::Psy => self.end_note = true,
             _ => {}
         }
-        if let LeadState::Psy = state {
+        if let Lead1State::Psy = state {
             self.start_note = true;
         }
 
-        if let LeadState::Acid = state {
+        if let Lead1State::Acid = state {
             self.acid.next_pattern(scale);
         }
 
@@ -85,15 +110,14 @@ impl Lead1 {
         self.state = state;
     }
 
-    // TODO: If we don't need remove
-    pub fn get_state(&self) -> LeadState {
+    pub fn get_state(&self) -> Lead1State {
         self.state
     }
 
     pub fn on(&self) -> bool {
         match self.state {
-            LeadState::Acid => true,
-            LeadState::Psy => true,
+            Lead1State::Acid => true,
+            Lead1State::Psy => true,
             _ => false,
         }
     }

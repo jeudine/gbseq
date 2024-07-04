@@ -1,5 +1,5 @@
 use crate::pattern::Note;
-use crate::state::{LeadState, SelPatt, Stage, State};
+use crate::state::{Lead0State, Lead1State, SelPatt, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
 use std::default::Default;
@@ -18,14 +18,15 @@ struct Action {
     oh_toggle: bool,
     perc_toggle: bool,
     pattern: Option<SelPatt>,
-    lead: Option<LeadState>,
+    lead0: Option<Lead0State>,
+    lead1: Option<Lead1State>,
 }
 
 pub fn handle(
     s: &String,
     channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
     state_arc: &Arc<Mutex<State>>,
-) -> Option<(Note, u8, LeadState)> {
+) -> Option<(Note, u8, Lead0State, Lead1State)> {
     let action = Action::parse(s);
     let (channel, _) = &**channel_arc;
     let mut state = state_arc.lock().unwrap();
@@ -57,7 +58,8 @@ pub fn handle(
     state.ch_toggle = action.ch_toggle;
     state.perc_toggle = action.perc_toggle;
     state.sel_patt = action.pattern;
-    state.sel_lead = action.lead;
+    state.sel_lead0 = action.lead0;
+    state.sel_lead1 = action.lead1;
 
     Some(state.get_root_note_bpm_lead())
 }
@@ -78,9 +80,9 @@ impl Action {
                 '6' => action.perc_toggle = true,
                 '7' => action.pattern = Some(SelPatt::Prev),
                 '8' => action.pattern = Some(SelPatt::Next),
-                '/' => action.lead = Some(LeadState::None),
-                '*' => action.lead = Some(LeadState::Acid),
-                '-' => action.lead = Some(LeadState::Psy),
+                '/' => action.lead1 = Some(Lead1State::None),
+                '*' => action.lead1 = Some(Lead1State::Acid),
+                '-' => action.lead1 = Some(Lead1State::Psy),
                 _ => {}
             }
         }

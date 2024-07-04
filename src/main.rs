@@ -7,7 +7,7 @@ use breakbeat::Breakbeat0;
 use drop::Drop0;
 use high_pass::HighPass0;
 use tseq::sequence::Sequence;
-use tseq::{run, Acid, AcidLead, Note, Pattern, Perc, Rythm, Scale::*, Timing::*};
+use tseq::{run, Acid, AcidLead, Arp, Note, Pattern, Perc, Rythm, Scale::*, Timing::*};
 
 fn main() {
     let break0 = Break0::default();
@@ -52,6 +52,8 @@ fn main() {
         [er_4, er_3, er_1],
         [er_5, er_3, er_2],
     ]);
+
+    let arp = Arp::new();
 
     // Acid
     let acid_0 = AcidLead::new(
@@ -137,7 +139,7 @@ fn main() {
     let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3]);
 
     //TODO: print at the begining all the MIDI channels used
-    match run(1, patterns, perc, acid) {
+    match run(1, patterns, perc, arp, acid) {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[ERROR] {}", e);

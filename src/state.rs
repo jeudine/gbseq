@@ -1,6 +1,7 @@
 use crate::acid::Acid;
+use crate::arp::Arp;
 use crate::hh::HH;
-use crate::lead::Lead1;
+use crate::lead::{Lead0, Lead1};
 use crate::pattern::{Note, Pattern};
 use crate::perc::Perc;
 use crate::scale::Scale;
@@ -28,22 +29,41 @@ pub enum Transition {
 }
 
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
-pub enum LeadState {
+pub enum Lead0State {
+    #[default]
+    None,
+    Arp,
+    Atm,
+}
+
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
+pub enum Lead1State {
     #[default]
     None,
     Acid,
     Psy,
 }
 
-impl fmt::Display for LeadState {
+impl fmt::Display for Lead0State {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LeadState::None => write!(f, "None"),
-            LeadState::Acid => write!(f, "Acid"),
-            LeadState::Psy => write!(f, "Psy"),
+            Lead0State::None => write!(f, "None"),
+            Lead0State::Arp => write!(f, "Arp"),
+            Lead0State::Atm => write!(f, "Atm"),
         }
     }
 }
+
+impl fmt::Display for Lead1State {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Lead1State::None => write!(f, "None"),
+            Lead1State::Acid => write!(f, "Acid"),
+            Lead1State::Psy => write!(f, "Psy"),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum SelPatt {
     Prev,
@@ -70,12 +90,14 @@ pub struct State {
     pub patterns: Vec<Pattern>,
     pub cur_pattern_id: usize,
     pub sel_patt: Option<SelPatt>,
-    pub sel_lead: Option<LeadState>,
+    pub sel_lead0: Option<Lead0State>,
+    pub sel_lead1: Option<Lead1State>,
     pub stage: Stage,
     next_stage: Stage,
     pub cur_seq_id: usize,
     hh: HH,
     perc: Perc,
+    lead0: Lead0,
     lead1: Lead1,
     pub ch_toggle: bool,
     pub oh_toggle: bool,
@@ -100,15 +122,17 @@ pub struct StateData {
 }
 
 impl State {
-    pub fn new(patterns: Vec<Pattern>, perc: Perc, acid: Acid) -> Self {
+    pub fn new(patterns: Vec<Pattern>, perc: Perc, arp: Arp, acid: Acid) -> Self {
         Self {
             running: false,
             patterns,
             perc,
             lead1: Lead1::new(acid),
+            lead0: Lead0::new(arp),
             cur_pattern_id: 0,
             sel_patt: None,
-            sel_lead: None,
+            sel_lead0: None,
+            sel_lead1: None,
             stage: Stage::default(),
             next_stage: Stage::default(),
             cur_seq_id: 0,
@@ -188,9 +212,9 @@ impl State {
             self.perc.toggle(rng);
             self.perc_toggle = false;
         }
-        if let Some(l) = self.sel_lead {
+        if let Some(l) = self.sel_lead1 {
             self.lead1.toggle(l, self.scale);
-            self.sel_lead = None;
+            self.sel_lead0 = None;
         }
     }
 
@@ -218,7 +242,7 @@ impl State {
         self.patterns[self.cur_pattern_id].root.get_midi()
     }
 
-    pub fn get_root_note_bpm_lead(&self) -> (Note, u8, LeadState) {
+    pub fn get_root_note_bpm_lead(&self) -> (Note, u8, Lead0State, Lead1State) {
         let mut i = self.cur_pattern_id;
         if let Some(p) = self.sel_patt {
             match p {
@@ -235,10 +259,14 @@ impl State {
             };
         }
 
-        let mut lead = self.lead1.get_state();
-        if let Some(l) = self.sel_lead {
-            lead = l;
+        let mut lead0 = self.lead0.get_state();
+        if let Some(l) = self.sel_lead0 {
+            lead0 = l;
         }
-        (self.patterns[i].root, self.patterns[i].bpm, lead)
+        let mut lead1 = self.lead1.get_state();
+        if let Some(l) = self.sel_lead1 {
+            lead1 = l;
+        }
+        (self.patterns[i].root, self.patterns[i].bpm, lead0, lead1)
     }
 }

@@ -1,6 +1,6 @@
 pub use crate::perc::Perc;
 pub use crate::perc::Rythm;
-use crate::state::LeadState;
+use crate::state::Lead1State;
 pub use crate::state::StateData;
 use action::handle;
 use clock::{clock_gen, compute_period_us};
@@ -9,6 +9,7 @@ use midir::{ConnectError, InitError, MidiOutput, MidiOutputConnection, MidiOutpu
 pub use pattern::Note;
 pub use pattern::Pattern;
 use promptly::{prompt, prompt_default, ReadlineError};
+use state::Lead0State;
 pub use state::Stage;
 use state::State;
 pub use state::Transition;
@@ -20,6 +21,7 @@ pub use trig::trigger;
 pub mod acid;
 pub use hh::{only_trigger_ch, only_trigger_oh};
 mod action;
+pub mod arp;
 mod clock;
 mod hh;
 mod lead;
@@ -31,6 +33,7 @@ pub mod sequence;
 mod state;
 mod trig;
 pub use acid::{Acid, AcidLead, Timing};
+pub use arp::Arp;
 pub use scale::Scale;
 
 pub const PERC_CHANNEL: u8 = 0;
@@ -68,6 +71,7 @@ pub fn run(
     channel_id: u8,
     patterns: Vec<Pattern>,
     perc: Perc,
+    arp: Arp,
     acid: Acid,
 ) -> Result<(), TSeqError> {
     let midi_out = MidiOutput::new("out")?;
@@ -107,9 +111,14 @@ pub fn run(
     };
     let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
-    let mut infos = (patterns[0].root, patterns[0].bpm, LeadState::None);
+    let mut infos = (
+        patterns[0].root,
+        patterns[0].bpm,
+        Lead0State::None,
+        Lead1State::None,
+    );
 
-    let state = State::new(patterns, perc, acid);
+    let state = State::new(patterns, perc, arp, acid);
 
     let state_arc = Arc::new(Mutex::new(state));
 
@@ -123,7 +132,13 @@ pub fn run(
     let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id - 1));
 
     loop {
-        let s = format!("[{} {} {}]", infos.0.get_str(), infos.1, infos.2);
+        let s = format!(
+            "[{} {} {} {}]",
+            infos.0.get_str(),
+            infos.1,
+            infos.2,
+            infos.3
+        );
         let s: String = prompt(s)?;
         if let Some(i) = handle(&s, &channel_arc, &state_arc) {
             infos = i;
