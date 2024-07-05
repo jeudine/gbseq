@@ -145,6 +145,7 @@ impl Sequence for Drop0 {
             only_trigger_ch(&state_data.hh, conn);
         }
         trigger(conn, &state_data.perc);
+        trigger(conn, &state_data.lead1);
     }
 }
 

@@ -80,7 +80,7 @@ impl Lead1 {
             self.start_note = false;
             self.prev_psy_note = root;
             res.push(Trig {
-                start_end: false,
+                start_end: true,
                 channel_id: LEAD1_CHANNEL,
                 note: root,
                 velocity: 100,

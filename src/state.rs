@@ -216,7 +216,7 @@ impl State {
         }
         if let Some(l) = self.sel_lead1 {
             self.lead1.toggle(l, self.scale);
-            self.sel_lead0 = None;
+            self.sel_lead1 = None;
         }
     }
 
