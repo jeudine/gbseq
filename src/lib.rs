@@ -116,6 +116,7 @@ pub fn run(
         patterns[0].bpm,
         Lead0State::None,
         Lead1State::None,
+        Scale::NaturalMinor,
     );
 
     let state = State::new(patterns, perc, arp, acid);
@@ -133,11 +134,12 @@ pub fn run(
 
     loop {
         let s = format!(
-            "[{} {} {} {}]",
+            "[{} {} | {} | {} | {}]",
             infos.0.get_str(),
             infos.1,
             infos.2,
-            infos.3
+            infos.3,
+            infos.4,
         );
         let s: String = prompt(s)?;
         if let Some(i) = handle(&s, &channel_arc, &state_arc) {

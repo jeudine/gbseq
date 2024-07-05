@@ -92,6 +92,7 @@ pub struct State {
     pub sel_patt: Option<SelPatt>,
     pub sel_lead0: Option<Lead0State>,
     pub sel_lead1: Option<Lead1State>,
+    pub sel_scale: Option<Scale>,
     pub stage: Stage,
     next_stage: Stage,
     pub cur_seq_id: usize,
@@ -133,6 +134,7 @@ impl State {
             sel_patt: None,
             sel_lead0: None,
             sel_lead1: None,
+            sel_scale: None,
             stage: Stage::default(),
             next_stage: Stage::default(),
             cur_seq_id: 0,
@@ -242,7 +244,7 @@ impl State {
         self.patterns[self.cur_pattern_id].root.get_midi()
     }
 
-    pub fn get_root_note_bpm_lead(&self) -> (Note, u8, Lead0State, Lead1State) {
+    pub fn get_infos(&self) -> (Note, u8, Lead0State, Lead1State, Scale) {
         let mut i = self.cur_pattern_id;
         if let Some(p) = self.sel_patt {
             match p {
@@ -259,14 +261,30 @@ impl State {
             };
         }
 
-        let mut lead0 = self.lead0.get_state();
-        if let Some(l) = self.sel_lead0 {
-            lead0 = l;
-        }
-        let mut lead1 = self.lead1.get_state();
-        if let Some(l) = self.sel_lead1 {
-            lead1 = l;
-        }
-        (self.patterns[i].root, self.patterns[i].bpm, lead0, lead1)
+        let lead0 = if let Some(l) = self.sel_lead0 {
+            l
+        } else {
+            self.lead0.get_state()
+        };
+
+        let lead1 = if let Some(l) = self.sel_lead1 {
+            l
+        } else {
+            self.lead1.get_state()
+        };
+
+        let scale = if let Some(s) = self.sel_scale {
+            s
+        } else {
+            self.scale
+        };
+
+        (
+            self.patterns[i].root,
+            self.patterns[i].bpm,
+            lead0,
+            lead1,
+            scale,
+        )
     }
 }
