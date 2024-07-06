@@ -193,7 +193,7 @@ impl State {
                 lead1: self.lead1.get_trigs(step, root_note),
                 ch_on: self.hh.ch_on(),
                 oh_on: self.hh.oh_on(),
-                lead0_on: false,
+                lead0_on: self.lead0.on(),
                 lead1_on: self.lead1.on(),
                 perc_on: self.perc.on(),
             },

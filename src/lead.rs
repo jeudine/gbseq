@@ -133,6 +133,14 @@ impl Lead0 {
         self.prev_state = self.state;
         self.state = state;
     }
+
+    pub fn on(&self) -> bool {
+        match self.state {
+            Lead0State::Arp => true,
+            Lead0State::Atm => true,
+            _ => false,
+        }
+    }
 }
 impl Lead1 {
     pub fn new(acid: Acid) -> Self {
