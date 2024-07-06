@@ -68,6 +68,7 @@ pub fn handle(
 impl Action {
     fn parse(s: &String) -> Self {
         let mut action = Self::default();
+        let mut opt = false;
         for c in s.chars() {
             match c {
                 's' => action.system = Some(System::StartStop),
@@ -81,9 +82,28 @@ impl Action {
                 '6' => action.perc_toggle = true,
                 '7' => action.pattern = Some(SelPatt::Prev),
                 '8' => action.pattern = Some(SelPatt::Next),
-                '/' => action.lead1 = Some(Lead1State::None),
-                '*' => action.lead1 = Some(Lead1State::Acid),
-                '-' => action.lead1 = Some(Lead1State::Psy),
+                '/' => {
+                    if opt {
+                        action.lead1 = Some(Lead1State::None);
+                    } else {
+                        action.lead0 = Some(Lead0State::None);
+                    }
+                }
+                '*' => {
+                    if opt {
+                        action.lead1 = Some(Lead1State::Acid);
+                    } else {
+                        action.lead0 = Some(Lead0State::Arp);
+                    }
+                }
+                '-' => {
+                    if opt {
+                        action.lead1 = Some(Lead1State::Psy);
+                    } else {
+                        action.lead0 = Some(Lead0State::Atm);
+                    }
+                }
+                '+' => opt = true,
                 _ => {}
             }
         }

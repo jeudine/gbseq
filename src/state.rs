@@ -189,7 +189,7 @@ impl State {
                 root_note,
                 hh: self.hh.get_trigs(step, root_note, rng),
                 perc: self.perc.get_trigs(step),
-                lead0: vec![],
+                lead0: self.lead0.get_trigs(step, root_note),
                 lead1: self.lead1.get_trigs(step, root_note),
                 ch_on: self.hh.ch_on(),
                 oh_on: self.hh.oh_on(),
@@ -213,6 +213,10 @@ impl State {
         if self.perc_toggle {
             self.perc.toggle(rng);
             self.perc_toggle = false;
+        }
+        if let Some(l) = self.sel_lead0 {
+            self.lead0.toggle(l, self.scale);
+            self.sel_lead0 = None;
         }
         if let Some(l) = self.sel_lead1 {
             self.lead1.toggle(l, self.scale);

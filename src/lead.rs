@@ -38,6 +38,101 @@ impl Lead0 {
     pub fn get_state(&self) -> Lead0State {
         self.state
     }
+
+    pub fn get_trigs(&mut self, step: u32, root: u8) -> Vec<Trig> {
+        let mut res = vec![];
+        if self.end_note {
+            self.end_note = false;
+            match self.prev_state {
+                Lead0State::Arp => {
+                    let prev_note = self.arp.get_prev_note();
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD0_CHANNEL,
+                        note: prev_note.0,
+                        velocity: prev_note.1,
+                    });
+                }
+                Lead0State::Atm => {
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note,
+                        velocity: 100,
+                    });
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note + 3,
+                        velocity: 100,
+                    });
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note + 7,
+                        velocity: 100,
+                    });
+                    res.push(Trig {
+                        start_end: false,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note + 12,
+                        velocity: 100,
+                    });
+                }
+                _ => {}
+            }
+        }
+        if self.start_note {
+            self.start_note = false;
+            self.prev_atm_note = root;
+            res.push(Trig {
+                start_end: true,
+                channel_id: LEAD0_CHANNEL,
+                note: self.prev_atm_note,
+                velocity: 100,
+            });
+            res.push(Trig {
+                start_end: true,
+                channel_id: LEAD0_CHANNEL,
+                note: self.prev_atm_note + 3,
+                velocity: 100,
+            });
+            res.push(Trig {
+                start_end: true,
+                channel_id: LEAD0_CHANNEL,
+                note: self.prev_atm_note + 7,
+                velocity: 100,
+            });
+            res.push(Trig {
+                start_end: true,
+                channel_id: LEAD0_CHANNEL,
+                note: self.prev_atm_note + 12,
+                velocity: 100,
+            });
+        }
+        match self.state {
+            Lead0State::Arp => res.append(&mut self.arp.get_trig(step, root)),
+            _ => {}
+        }
+        res
+    }
+
+    pub fn toggle(&mut self, state: Lead0State, scale: Scale) {
+        match self.state {
+            Lead0State::Arp | Lead0State::Atm => self.end_note = true,
+            _ => {}
+        }
+        if let Lead0State::Atm = state {
+            self.start_note = true;
+        }
+
+        if let Lead0State::Arp = state {
+            self.arp.next_pattern(scale);
+        }
+
+        self.prev_state = self.state;
+        self.state = state;
+    }
 }
 impl Lead1 {
     pub fn new(acid: Acid) -> Self {
