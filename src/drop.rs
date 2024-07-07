@@ -40,8 +40,6 @@ pub struct Drop0 {
     toggle: Option<Toggle>,
     ch_toggle: bool,
     oh_toggle: bool,
-    lead0_toggle: bool,
-    lead1_toggle: bool,
     lead0_prev: bool,
     lead1_prev: bool,
 }
@@ -70,19 +68,16 @@ impl Sequence for Drop0 {
             );
             self.ch_toggle = false;
             self.oh_toggle = false;
-            self.lead0_toggle = false;
-            self.lead1_toggle = false;
             self.toggle = None;
             if transition == Transition::No {
                 self.ch_toggle = self.ch_prev ^ ch;
                 self.oh_toggle = self.oh_prev ^ oh;
-                self.lead0_toggle = !self.lead0_prev && lead0;
-                self.lead1_toggle = !self.lead1_prev && lead1;
+                let lead0_toggle = !self.lead0_prev && lead0;
+                let lead1_toggle = !self.lead1_prev && lead1;
 
                 if (!oh && self.oh_prev) || (!ch && self.ch_prev) {
                     self.toggle = Some(Toggle::BarToggle);
-                } else if self.ch_toggle || self.oh_toggle || self.lead0_toggle || self.lead1_toggle
-                {
+                } else if self.ch_toggle || self.oh_toggle || lead0_toggle || lead1_toggle {
                     self.toggle = Some(rng.gen());
                 }
             }
@@ -155,13 +150,8 @@ impl Sequence for Drop0 {
             only_trigger_ch(&state_data.hh, conn);
         }
         trigger(conn, &state_data.perc);
-
-        if lead0 && !self.lead0_toggle {
-            trigger(conn, &state_data.lead0);
-        }
-        if lead1 && !self.lead1_toggle {
-            trigger(conn, &state_data.lead1);
-        }
+        trigger(conn, &state_data.lead0);
+        trigger(conn, &state_data.lead1);
     }
 }
 

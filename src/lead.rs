@@ -10,8 +10,9 @@ pub struct Lead0 {
     state: Lead0State,
     prev_state: Lead0State,
     end_note: bool,
-    start_note: bool,
     prev_atm_note: u8,
+    start_note: bool,
+    start_note_reg: bool,
 }
 
 pub struct Lead1 {
@@ -30,8 +31,9 @@ impl Lead0 {
             state: Lead0State::default(),
             prev_state: Lead0State::default(),
             end_note: false,
-            start_note: false,
             prev_atm_note: 0,
+            start_note: false,
+            start_note_reg: false,
         }
     }
 
@@ -82,36 +84,44 @@ impl Lead0 {
                 _ => {}
             }
         }
-        if self.start_note {
-            self.start_note = false;
-            self.prev_atm_note = root;
-            res.push(Trig {
-                start_end: true,
-                channel_id: LEAD0_CHANNEL,
-                note: self.prev_atm_note,
-                velocity: 100,
-            });
-            res.push(Trig {
-                start_end: true,
-                channel_id: LEAD0_CHANNEL,
-                note: self.prev_atm_note + 3,
-                velocity: 100,
-            });
-            res.push(Trig {
-                start_end: true,
-                channel_id: LEAD0_CHANNEL,
-                note: self.prev_atm_note + 7,
-                velocity: 100,
-            });
-            res.push(Trig {
-                start_end: true,
-                channel_id: LEAD0_CHANNEL,
-                note: self.prev_atm_note + 12,
-                velocity: 100,
-            });
-        }
+
         match self.state {
             Lead0State::Arp => res.append(&mut self.arp.get_trig(step, root)),
+            Lead0State::Atm => {
+                if step % 96 == 0 {
+                    if self.start_note {
+                        self.start_note_reg = true;
+                        self.start_note = false;
+                    } else if self.start_note_reg {
+                        self.start_note_reg = false;
+                        self.prev_atm_note = root;
+                        res.push(Trig {
+                            start_end: true,
+                            channel_id: LEAD0_CHANNEL,
+                            note: self.prev_atm_note,
+                            velocity: 100,
+                        });
+                        res.push(Trig {
+                            start_end: true,
+                            channel_id: LEAD0_CHANNEL,
+                            note: self.prev_atm_note + 3,
+                            velocity: 100,
+                        });
+                        res.push(Trig {
+                            start_end: true,
+                            channel_id: LEAD0_CHANNEL,
+                            note: self.prev_atm_note + 7,
+                            velocity: 100,
+                        });
+                        res.push(Trig {
+                            start_end: true,
+                            channel_id: LEAD0_CHANNEL,
+                            note: self.prev_atm_note + 12,
+                            velocity: 100,
+                        });
+                    }
+                }
+            }
             _ => {}
         }
         res
@@ -122,6 +132,7 @@ impl Lead0 {
             Lead0State::Arp | Lead0State::Atm => self.end_note = true,
             _ => {}
         }
+
         if let Lead0State::Atm = state {
             self.start_note = true;
         }
