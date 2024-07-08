@@ -17,14 +17,17 @@ pub struct Perc {
     cur_pattern_id: usize,
     patterns: Vec<[Rythm; 3]>,
     is_active: bool,
+    is_active_reg: [bool; 2],
 }
 
 impl Perc {
-    pub fn get_trigs(&self, step: u32) -> Vec<Trig> {
-        if !self.is_active {
-            return vec![];
+    pub fn get_trigs(&mut self, step: u32) -> Vec<Trig> {
+        if step % 96 == 0 {
+            self.is_active_reg[1] = self.is_active_reg[0];
+            self.is_active_reg[0] = self.is_active;
         }
-        if step % 6 == 0 {
+
+        if self.is_active_reg[1] && step % 6 == 0 {
             let pattern = &self.patterns[self.cur_pattern_id];
             let t = step / 6;
             let t = t as usize % NB_TRIGS;
@@ -45,6 +48,7 @@ impl Perc {
                 })
                 .collect();
         }
+
         vec![]
     }
 
@@ -64,6 +68,7 @@ impl Perc {
             cur_pattern_id: 0,
             patterns,
             is_active: false,
+            is_active_reg: [false; 2],
         }
     }
 

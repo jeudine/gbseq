@@ -37,7 +37,9 @@ pub struct Drop0 {
     skipped: bool,
     ch_prev: bool,
     oh_prev: bool,
+    perc_prev: bool,
     toggle: Option<Toggle>,
+    perc_toggle: bool,
     ch_toggle: bool,
     oh_toggle: bool,
     lead0_prev: bool,
@@ -60,6 +62,7 @@ impl Sequence for Drop0 {
         let oh = state_data.oh_on;
         let lead0 = state_data.lead0_on;
         let lead1 = state_data.lead1_on;
+        let perc = state_data.perc_on;
 
         if t == 0 {
             log_send(
@@ -68,21 +71,29 @@ impl Sequence for Drop0 {
             );
             self.ch_toggle = false;
             self.oh_toggle = false;
+            self.perc_toggle = false;
             self.toggle = None;
             if transition == Transition::No {
                 self.ch_toggle = self.ch_prev ^ ch;
                 self.oh_toggle = self.oh_prev ^ oh;
+                self.perc_toggle = self.perc_prev ^ perc;
                 let lead0_toggle = !self.lead0_prev && lead0;
                 let lead1_toggle = !self.lead1_prev && lead1;
 
                 if (!oh && self.oh_prev) || (!ch && self.ch_prev) {
                     self.toggle = Some(Toggle::BarToggle);
-                } else if self.ch_toggle || self.oh_toggle || lead0_toggle || lead1_toggle {
+                } else if self.ch_toggle
+                    || self.oh_toggle
+                    || lead0_toggle
+                    || lead1_toggle
+                    || self.perc_toggle
+                {
                     self.toggle = Some(rng.gen());
                 }
             }
             self.ch_prev = ch;
             self.oh_prev = oh;
+            self.perc_prev = perc;
             self.lead0_prev = lead0;
             self.lead1_prev = lead1;
         }
@@ -142,14 +153,16 @@ impl Sequence for Drop0 {
             }
         }
 
-        // We want the HH to be down when we toggle on and on before 72 when we toggle off
+        // We want the HH to be off when we toggle on and on before 72 when we toggle off
         if (oh ^ self.oh_toggle) && (t < 72 || !self.oh_toggle) {
             only_trigger_oh(&state_data.hh, conn);
         }
         if (ch ^ self.ch_toggle) && (t < 72 || !self.ch_toggle) {
             only_trigger_ch(&state_data.hh, conn);
         }
-        trigger(conn, &state_data.perc);
+        if (perc ^ self.perc_toggle) && (t < 72 || !self.perc_toggle) {
+            trigger(conn, &state_data.perc);
+        }
         trigger(conn, &state_data.lead0);
         trigger(conn, &state_data.lead1);
     }
