@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::scale::Scale;
 use crate::trig::Trig;
 use crate::LEAD1_CHANNEL;
@@ -14,7 +16,6 @@ pub enum Timing {
 
 use Timing::*;
 
-//TODO: Add triplets
 #[derive(Default, Copy, Clone)]
 pub struct AcidTrig {
     note: (u8, i8),
@@ -59,7 +60,28 @@ impl AcidLead {
 
 impl Acid {
     pub fn new(patterns: Vec<AcidLead>) -> Self {
-        //TODO: check that we have at least one pattern from each scale
+        //Check that we have at least one pattern for each scale
+        let mut sc: [bool; 3] = [false; 3];
+        for p in &patterns {
+            for s in &p.scales {
+                match s {
+                    Scale::NaturalMinor => sc[0] = true,
+                    Scale::HarmonicMinor => sc[1] = true,
+                    Scale::PhrygianMode => sc[2] = true,
+                }
+            }
+        }
+
+        for (i, s) in sc.iter().enumerate() {
+            if !s {
+                match i {
+                    0 => panic!("No acid lead for Natural Minor Scale!"),
+                    1 => panic!("No acid lead for Harmonic Minor Scale!"),
+                    _ => panic!("No acid lead for Phrygian Mode!"),
+                }
+            }
+        }
+
         let mut patterns = patterns.clone();
         patterns.shuffle(&mut thread_rng());
         Self {

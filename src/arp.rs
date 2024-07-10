@@ -1,6 +1,26 @@
 use crate::scale::Scale;
 use crate::trig::Trig;
-pub struct Arp {}
+
+pub enum ArpDiv {
+    T4,
+    T8,
+    T16,
+}
+
+#[derive(Default, Clone)]
+pub struct ArpLead {
+    pattern: Vec<Vec<(u8, i8)>>,
+    scales: Vec<Scale>,
+    played: bool,
+}
+
+pub struct Arp {
+    patterns: Vec<ArpLead>,
+    cur_id: usize,
+    prev_note: u8,
+}
+
+impl ArpLead {}
 
 impl Arp {
     pub fn new() -> Self {
