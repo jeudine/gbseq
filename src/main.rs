@@ -53,7 +53,7 @@ fn main() {
         [er_5, er_3, er_2],
     ]);
 
-    let arp = Arp::new();
+    let arp = Arp::new(vec![]);
 
     // Acid
     let acid_0 = AcidLead::new(
