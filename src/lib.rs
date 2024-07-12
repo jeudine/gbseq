@@ -33,7 +33,7 @@ pub mod sequence;
 mod state;
 mod trig;
 pub use acid::{Acid, AcidLead, Timing};
-pub use arp::Arp;
+pub use arp::{Arp, ArpDiv, ArpLead};
 pub use scale::Scale;
 
 pub const PERC_CHANNEL: u8 = 0;

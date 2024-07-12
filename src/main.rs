@@ -7,7 +7,9 @@ use breakbeat::Breakbeat0;
 use drop::Drop0;
 use high_pass::HighPass0;
 use tseq::sequence::Sequence;
-use tseq::{run, Acid, AcidLead, Arp, Note, Pattern, Perc, Rythm, Scale::*, Timing::*};
+use tseq::{
+    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Perc, Rythm, Scale::*, Timing::*,
+};
 
 fn main() {
     let break0 = Break0::default();
@@ -53,7 +55,30 @@ fn main() {
         [er_5, er_3, er_2],
     ]);
 
-    let arp = Arp::new(vec![]);
+    // Arp
+    let arp0 = ArpLead::new(
+        vec![
+            vec![(0, 0), (1, 0), (5, 0), (7, 0)],
+            vec![(0, 0), (1, 0), (5, 0), (8, 0)],
+        ],
+        T8,
+        vec![PhrygianMode],
+    );
+    let arp1 = ArpLead::new(
+        vec![vec![(7, 0), (8, 0), (11, 0), (0, 1), (11, 0), (8, 0)]],
+        T8,
+        vec![HarmonicMinor],
+    );
+    let arp2 = ArpLead::new(
+        vec![
+            vec![(0, 0), (3, 0), (7, 0), (3, 0)],
+            vec![(0, 0), (2, 0), (7, 0), (2, 0)],
+        ],
+        T8,
+        vec![NaturalMinor, HarmonicMinor],
+    );
+
+    let arp = Arp::new(vec![arp0, arp1, arp2]);
 
     // Acid
     let acid_0 = AcidLead::new(
