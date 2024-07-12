@@ -61,16 +61,17 @@ impl AcidLead {
 impl Acid {
     pub fn new(patterns: Vec<AcidLead>) -> Self {
         //Check that we have at least one pattern for each scale
-        let mut sc: [bool; 3] = [false; 3];
-        for p in &patterns {
-            for s in &p.scales {
-                match s {
-                    Scale::NaturalMinor => sc[0] = true,
-                    Scale::HarmonicMinor => sc[1] = true,
-                    Scale::PhrygianMode => sc[2] = true,
+        /*
+                let mut sc: [bool; 3] = [false; 3];
+                for p in &patterns {
+                    for s in &p.scales {
+                        match s {
+                            Scale::NaturalMinor => sc[0] = true,
+                            Scale::HarmonicMinor => sc[1] = true,
+                            Scale::PhrygianMode => sc[2] = true,
+                        }
+                    }
                 }
-            }
-        }
 
         for (i, s) in sc.iter().enumerate() {
             if !s {
@@ -82,6 +83,7 @@ impl Acid {
             }
         }
 
+        */
         let mut patterns = patterns.clone();
         patterns.shuffle(&mut thread_rng());
         Self {
