@@ -1,9 +1,14 @@
 use crate::scale::Scale;
 use crate::trig::Trig;
+use crate::LEAD0_CHANNEL;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
+const LEAD_VEL: u8 = 100;
+
+#[derive(Default, Clone)]
 pub enum ArpDiv {
+    #[default]
     T4,
     T8,
     T16,
@@ -13,20 +18,23 @@ pub enum ArpDiv {
 pub struct ArpLead {
     pattern: Vec<Vec<(u8, i8)>>,
     scales: Vec<Scale>,
+    arp_div: ArpDiv,
     played: bool,
 }
 
 pub struct Arp {
     patterns: Vec<ArpLead>,
     cur_id: usize,
+    cur_sub_id: u8,
     prev_note: u8,
 }
 
 impl ArpLead {
-    pub fn new(pattern: Vec<Vec<(u8, i8)>>, scales: Vec<Scale>) -> Self {
+    pub fn new(pattern: Vec<Vec<(u8, i8)>>, arp_div: ArpDiv, scales: Vec<Scale>) -> Self {
         Self {
             pattern,
             scales,
+            arp_div,
             played: false,
         }
     }
@@ -61,12 +69,49 @@ impl Arp {
         Self {
             patterns,
             cur_id: 0,
+            cur_sub_id: 0,
             prev_note: 0,
         }
     }
 
     pub fn get_trig(&mut self, step: u32, root: u8) -> Vec<Trig> {
-        todo!()
+        let pattern = &self.patterns[self.cur_id];
+        let arp_div = &pattern.arp_div;
+        let div = match arp_div {
+            ArpDiv::T4 => 24,
+            ArpDiv::T8 => 12,
+            ArpDiv::T16 => 6,
+        };
+
+        if step % div == 0 {
+            let pattern = &pattern.pattern;
+            let t = step / div;
+            let cur_trig = t as usize % pattern.len();
+            let cur_note = &pattern[self.cur_sub_id as usize][cur_trig];
+            let note = root + cur_note.0 + (cur_note.1 * 12) as u8;
+            self.prev_note = note;
+            vec![Trig {
+                start_end: true,
+                channel_id: LEAD0_CHANNEL,
+                note,
+                velocity: LEAD_VEL,
+            }]
+        } else if step % div == (div / 2) {
+            vec![Trig {
+                start_end: false,
+                channel_id: LEAD0_CHANNEL,
+                note: self.prev_note,
+                velocity: LEAD_VEL,
+            }]
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn toggle_sub(&mut self) {
+        let pattern = &self.patterns[self.cur_id];
+        let len = pattern.pattern.len();
+        self.cur_sub_id = (self.cur_sub_id + 1) % len as u8;
     }
 
     pub fn get_prev_note(&self) -> (u8, u8) {
@@ -103,6 +148,7 @@ impl Arp {
             }
         };
 
+        self.cur_sub_id = 0;
         let pattern = &mut self.patterns[self.cur_id];
         pattern.played = true;
     }
