@@ -1,3 +1,5 @@
+use std::usize;
+
 use crate::scale::Scale;
 use crate::trig::Trig;
 use crate::LEAD0_CHANNEL;
@@ -84,10 +86,10 @@ impl Arp {
         };
 
         if step % div == 0 {
-            let pattern = &pattern.pattern;
+            let pattern = &pattern.pattern[self.cur_sub_id as usize];
             let t = step / div;
             let cur_trig = t as usize % pattern.len();
-            let cur_note = &pattern[self.cur_sub_id as usize][cur_trig];
+            let cur_note = &pattern[cur_trig];
             let note = root + cur_note.0 + (cur_note.1 * 12) as u8;
             self.prev_note = note;
             vec![Trig {
@@ -115,7 +117,7 @@ impl Arp {
     }
 
     pub fn get_prev_note(&self) -> (u8, u8) {
-        todo!()
+        (self.prev_note, LEAD_VEL)
     }
 
     pub fn next_pattern(&mut self, scale: Scale) {

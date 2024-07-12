@@ -105,6 +105,7 @@ pub struct State {
     pub perc_toggle: bool,
     transition: Transition,
     scale: Scale,
+    pub arp_toggle: bool,
 }
 
 pub struct StateData {
@@ -144,6 +145,7 @@ impl State {
             perc_toggle: false,
             transition: Transition::default(),
             scale: Scale::default(),
+            arp_toggle: false,
         }
     }
 
@@ -221,6 +223,11 @@ impl State {
         if let Some(l) = self.sel_lead1 {
             self.lead1.toggle(l, self.scale);
             self.sel_lead1 = None;
+        }
+
+        if self.arp_toggle {
+            self.lead0.toogle_arp();
+            self.arp_toggle = false;
         }
     }
 

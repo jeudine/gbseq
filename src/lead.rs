@@ -152,6 +152,12 @@ impl Lead0 {
             _ => false,
         }
     }
+
+    pub fn toogle_arp(&mut self) {
+        if let Lead0State::Arp = self.state {
+            self.arp.toggle_sub();
+        }
+    }
 }
 impl Lead1 {
     pub fn new(acid: Acid) -> Self {

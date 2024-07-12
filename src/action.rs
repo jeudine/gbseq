@@ -21,6 +21,7 @@ struct Action {
     pattern: Option<SelPatt>,
     lead0: Option<Lead0State>,
     lead1: Option<Lead1State>,
+    arp_toggle: bool,
 }
 
 pub fn handle(
@@ -61,6 +62,7 @@ pub fn handle(
     state.sel_patt = action.pattern;
     state.sel_lead0 = action.lead0;
     state.sel_lead1 = action.lead1;
+    state.arp_toggle = action.arp_toggle;
 
     Some(state.get_infos())
 }
@@ -104,6 +106,7 @@ impl Action {
                     }
                 }
                 '+' => opt = true,
+                '.' => action.arp_toggle = true,
                 _ => {}
             }
         }

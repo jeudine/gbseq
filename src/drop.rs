@@ -46,7 +46,6 @@ pub struct Drop0 {
     lead1_prev: bool,
 }
 
-//TODO: Percs
 impl Sequence for Drop0 {
     fn run(
         &mut self,
