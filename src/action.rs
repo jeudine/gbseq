@@ -1,6 +1,6 @@
 use crate::pattern::Note;
 use crate::scale::Scale;
-use crate::state::{Lead0State, Lead1State, SelPatt, Stage, State};
+use crate::state::{Info, Lead0State, Lead1State, SelPatt, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
 use std::default::Default;
@@ -28,7 +28,7 @@ pub fn handle(
     s: &String,
     channel_arc: &Arc<(Mutex<Channel>, Condvar)>,
     state_arc: &Arc<Mutex<State>>,
-) -> Option<(Note, u8, Lead0State, Lead1State, Scale)> {
+) -> Option<Info> {
     let action = Action::parse(s);
     let (channel, _) = &**channel_arc;
     let mut state = state_arc.lock().unwrap();
@@ -43,7 +43,7 @@ pub fn handle(
                 } else {
                     log_send(&mut channel.conn, &[message::STOP]);
                 }
-                return Some(state.get_infos());
+                return Some(state.get_info());
             }
             System::Quit => {
                 log_send(&mut channel.conn, &[message::STOP]);
@@ -64,7 +64,7 @@ pub fn handle(
     state.sel_lead1 = action.lead1;
     state.arp_toggle = action.arp_toggle;
 
-    Some(state.get_infos())
+    Some(state.get_info())
 }
 
 impl Action {

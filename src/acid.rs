@@ -1,5 +1,3 @@
-use core::panic;
-
 use crate::scale::Scale;
 use crate::trig::Trig;
 use crate::LEAD1_CHANNEL;
@@ -29,6 +27,7 @@ pub struct AcidLead {
     pattern: Vec<AcidTrig>,
     scales: Vec<Scale>,
     played: bool,
+    name: String,
 }
 
 #[derive(Default)]
@@ -39,7 +38,7 @@ pub struct Acid {
 }
 
 impl AcidLead {
-    pub fn new(pattern: Vec<((u8, i8), u8, bool, Timing)>, scales: Vec<Scale>) -> Self {
+    pub fn new(pattern: Vec<((u8, i8), u8, bool, Timing)>, scales: Vec<Scale>, name: &str) -> Self {
         let pattern = pattern
             .iter()
             .map(|u| AcidTrig {
@@ -54,24 +53,27 @@ impl AcidLead {
             pattern,
             scales,
             played: false,
+            name: String::from(name),
         }
     }
 }
 
 impl Acid {
+    pub fn get_name(&self) -> String {
+        self.patterns[self.cur_id].name.clone()
+    }
     pub fn new(patterns: Vec<AcidLead>) -> Self {
         //Check that we have at least one pattern for each scale
-        /*
-                let mut sc: [bool; 3] = [false; 3];
-                for p in &patterns {
-                    for s in &p.scales {
-                        match s {
-                            Scale::NaturalMinor => sc[0] = true,
-                            Scale::HarmonicMinor => sc[1] = true,
-                            Scale::PhrygianMode => sc[2] = true,
-                        }
-                    }
+        let mut sc: [bool; 3] = [false; 3];
+        for p in &patterns {
+            for s in &p.scales {
+                match s {
+                    Scale::NaturalMinor => sc[0] = true,
+                    Scale::HarmonicMinor => sc[1] = true,
+                    Scale::PhrygianMode => sc[2] = true,
                 }
+            }
+        }
 
         for (i, s) in sc.iter().enumerate() {
             if !s {
@@ -83,7 +85,6 @@ impl Acid {
             }
         }
 
-        */
         let mut patterns = patterns.clone();
         patterns.shuffle(&mut thread_rng());
         Self {

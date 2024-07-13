@@ -64,11 +64,13 @@ fn main() {
         ],
         T8,
         vec![PhrygianMode],
+        "0",
     );
     let arp1 = ArpLead::new(
         vec![vec![(7, 0), (8, 0), (11, 0), (0, 1), (11, 0), (8, 0)]],
         T8,
         vec![HarmonicMinor],
+        "1",
     );
     let arp2 = ArpLead::new(
         vec![
@@ -77,6 +79,7 @@ fn main() {
         ],
         T8,
         vec![NaturalMinor, HarmonicMinor],
+        "2",
     );
 
     let arp = Arp::new(vec![arp0, arp1, arp2]);
@@ -102,6 +105,7 @@ fn main() {
             ((0, 0), 89, false, Note),
         ],
         vec![HarmonicMinor],
+        "0",
     );
 
     let acid_1 = AcidLead::new(
@@ -124,6 +128,7 @@ fn main() {
             ((0, 0), 89, false, Note),
         ],
         vec![HarmonicMinor],
+        "1",
     );
 
     let acid_2 = AcidLead::new(
@@ -138,6 +143,7 @@ fn main() {
             ((0, 0), 89, false, Rest),
         ],
         vec![NaturalMinor, HarmonicMinor, PhrygianMode],
+        "2",
     );
 
     let acid_3 = AcidLead::new(
@@ -160,30 +166,80 @@ fn main() {
             ((0, 0), 89, false, Note),
         ],
         vec![HarmonicMinor],
+        "3",
     );
     let acid_4 = AcidLead::new(
         vec![
-            ((0, 0), 89, false, Note),
-            ((0, 0), 89, false, Tie),
-            ((3, 0), 89, false, Note),
-            ((3, 0), 89, false, Tie),
-            ((8, 0), 127, false, Note),
+            ((0, 1), 89, true, Note),
+            ((0, 1), 89, false, Tie),
+            ((3, 1), 89, false, Note),
+            ((3, 1), 89, false, Tie),
+            ((8, 1), 127, false, Note),
+            ((8, 1), 89, false, Tie),
+            ((8, 1), 89, false, Tie),
+            ((8, 1), 89, false, Tie),
+            ((0, 1), 89, true, Note),
+            ((0, 1), 89, false, Tie),
+            ((2, 1), 89, false, Note),
+            ((2, 1), 89, false, Tie),
+            ((8, 1), 127, false, Note),
+            ((8, 1), 89, false, Tie),
+            ((8, 1), 89, false, Tie),
+            ((8, 1), 89, false, Tie),
+            ((10, 0), 89, true, Note),
+            ((10, 0), 89, false, Tie),
+            ((2, 1), 89, false, Note),
+            ((2, 1), 89, false, Tie),
+            ((7, 1), 127, false, Note),
+            ((7, 1), 89, false, Tie),
+            ((7, 1), 89, false, Tie),
+            ((7, 1), 89, false, Tie),
+            ((8, 0), 89, true, Note),
             ((8, 0), 89, false, Tie),
+            ((0, 1), 89, false, Note),
+            ((0, 1), 89, false, Tie),
+            ((5, 1), 127, false, Note),
+            ((5, 1), 89, false, Tie),
+            ((5, 1), 89, false, Tie),
+            ((5, 1), 89, false, Tie),
+            ((10, 0), 89, true, Note),
+            ((10, 0), 89, false, Tie),
+            ((2, 1), 89, false, Note),
+            ((2, 1), 89, false, Tie),
+            ((7, 1), 127, false, Note),
+            ((7, 1), 89, false, Tie),
+            ((7, 1), 89, false, Tie),
+            ((7, 1), 89, false, Tie),
+            ((10, 0), 89, true, Note),
+            ((10, 0), 89, false, Tie),
+            ((0, 1), 89, false, Note),
+            ((0, 1), 89, false, Tie),
+            ((5, 1), 127, false, Note),
+            ((5, 1), 89, false, Tie),
+            ((5, 1), 89, false, Tie),
+            ((5, 1), 89, false, Tie),
+            ((7, 0), 89, true, Note),
+            ((7, 0), 89, false, Tie),
+            ((10, 0), 89, false, Note),
+            ((10, 0), 89, false, Tie),
+            ((3, 1), 127, false, Note),
+            ((3, 1), 89, false, Tie),
+            ((3, 1), 89, false, Tie),
+            ((3, 1), 89, false, Tie),
+            ((7, 0), 89, true, Note),
+            ((7, 0), 89, false, Tie),
+            ((8, 0), 89, false, Note),
             ((8, 0), 89, false, Tie),
-            ((8, 0), 89, false, Tie),
-            ((0, 0), 89, true, Note),
-            ((0, 0), 89, false, Tie),
-            ((2, 0), 89, false, Note),
-            ((2, 0), 89, false, Tie),
-            ((8, 0), 127, false, Note),
-            ((8, 0), 89, false, Tie),
-            ((8, 0), 89, false, Tie),
-            ((8, 0), 89, false, Tie),
+            ((10, 0), 127, false, Note),
+            ((10, 0), 89, false, Tie),
+            ((10, 0), 89, false, Tie),
+            ((10, 0), 89, false, Tie),
         ],
         vec![NaturalMinor],
+        "I Follow you",
     );
 
-    let acid = Acid::new(vec![/*acid_0, acid_1, acid_2, acid_3,*/ acid_4]);
+    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4]);
 
     let args: Vec<String> = env::args().collect();
 

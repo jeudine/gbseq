@@ -37,8 +37,12 @@ impl Lead0 {
         }
     }
 
-    pub fn get_state(&self) -> Lead0State {
-        self.state
+    pub fn get_state(&self) -> (Lead0State, Option<String>) {
+        if let Lead0State::Arp = self.state {
+            (Lead0State::Arp, Some(self.arp.get_name()))
+        } else {
+            (self.state, None)
+        }
     }
 
     pub fn get_trigs(&mut self, step: u32, root: u8) -> Vec<Trig> {
@@ -230,8 +234,12 @@ impl Lead1 {
         self.state = state;
     }
 
-    pub fn get_state(&self) -> Lead1State {
-        self.state
+    pub fn get_state(&self) -> (Lead1State, Option<String>) {
+        if let Lead1State::Acid = self.state {
+            (Lead1State::Acid, Some(self.acid.get_name()))
+        } else {
+            (self.state, None)
+        }
     }
 
     pub fn on(&self) -> bool {

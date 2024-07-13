@@ -108,6 +108,14 @@ pub struct State {
     pub arp_toggle: bool,
 }
 
+pub struct Info {
+    pub root: Note,
+    pub bpm: u8,
+    pub lead0: (Lead0State, Option<String>),
+    pub lead1: (Lead1State, Option<String>),
+    pub scale: Scale,
+}
+
 pub struct StateData {
     pub transition: Transition,
     pub root_note: u8,
@@ -255,7 +263,7 @@ impl State {
         self.patterns[self.cur_pattern_id].root.get_midi()
     }
 
-    pub fn get_infos(&self) -> (Note, u8, Lead0State, Lead1State, Scale) {
+    pub fn get_info(&self) -> Info {
         let mut i = self.cur_pattern_id;
         if let Some(p) = self.sel_patt {
             match p {
@@ -273,13 +281,13 @@ impl State {
         }
 
         let lead0 = if let Some(l) = self.sel_lead0 {
-            l
+            (l, None)
         } else {
             self.lead0.get_state()
         };
 
         let lead1 = if let Some(l) = self.sel_lead1 {
-            l
+            (l, None)
         } else {
             self.lead1.get_state()
         };
@@ -290,12 +298,12 @@ impl State {
             self.scale
         };
 
-        (
-            self.patterns[i].root,
-            self.patterns[i].bpm,
+        Info {
+            root: self.patterns[i].root,
+            bpm: self.patterns[i].bpm,
             lead0,
             lead1,
             scale,
-        )
+        }
     }
 }

@@ -1,7 +1,4 @@
-pub use crate::perc::Perc;
-pub use crate::perc::Rythm;
-use crate::state::Lead1State;
-pub use crate::state::StateData;
+pub use crate::perc::{Perc, Rythm};
 use action::handle;
 use clock::{clock_gen, compute_period_us};
 use message::messages_gen;
@@ -9,10 +6,9 @@ use midir::{ConnectError, InitError, MidiOutput, MidiOutputConnection, MidiOutpu
 pub use pattern::Note;
 pub use pattern::Pattern;
 use promptly::{prompt, prompt_default, ReadlineError};
-use state::Lead0State;
-pub use state::Stage;
-use state::State;
-pub use state::Transition;
+use state::{Info, Lead0State, Lead1State, State};
+pub use state::{Stage, StateData, Transition};
+use std::fmt::format;
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::spawn;
 use std::time::Instant;
@@ -120,13 +116,13 @@ pub fn run(
     };
     let channel_arc = Arc::new((Mutex::new(channel), Condvar::new()));
 
-    let mut infos = (
-        patterns[0].root,
-        patterns[0].bpm,
-        Lead0State::None,
-        Lead1State::None,
-        Scale::NaturalMinor,
-    );
+    let mut info = Info {
+        root: patterns[0].root,
+        bpm: patterns[0].bpm,
+        lead0: (Lead0State::None, None),
+        lead1: (Lead1State::None, None),
+        scale: Scale::default(),
+    };
 
     let state = State::new(patterns, perc, arp, acid);
 
@@ -142,17 +138,27 @@ pub fn run(
     let _ = spawn(move || messages_gen(&channel_arc_1, &state_arc_1, channel_id - 1));
 
     loop {
+        let lead0 = match info.lead0.1 {
+            Some(s) => format!("{}({})", info.lead0.0, s),
+            None => format!("{}", info.lead0.0),
+        };
+        let lead1 = match info.lead1.1 {
+            Some(s) => format!("{}({})", info.lead1.0, s),
+            None => format!("{}", info.lead1.0),
+        };
+
         let s = format!(
             "[{} {} | {} | {} | {}]",
-            infos.0.get_str(),
-            infos.1,
-            infos.2,
-            infos.3,
-            infos.4,
+            info.root.get_str(),
+            info.bpm,
+            lead0,
+            lead1,
+            info.scale
         );
+
         let s: String = prompt(s)?;
         if let Some(i) = handle(&s, &channel_arc, &state_arc) {
-            infos = i;
+            info = i;
         } else {
             break;
         }

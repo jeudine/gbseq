@@ -22,6 +22,7 @@ pub struct ArpLead {
     scales: Vec<Scale>,
     arp_div: ArpDiv,
     played: bool,
+    name: String,
 }
 
 pub struct Arp {
@@ -32,17 +33,27 @@ pub struct Arp {
 }
 
 impl ArpLead {
-    pub fn new(pattern: Vec<Vec<(u8, i8)>>, arp_div: ArpDiv, scales: Vec<Scale>) -> Self {
+    pub fn new(
+        pattern: Vec<Vec<(u8, i8)>>,
+        arp_div: ArpDiv,
+        scales: Vec<Scale>,
+        name: &str,
+    ) -> Self {
+        let len = pattern.len();
         Self {
             pattern,
             scales,
             arp_div,
             played: false,
+            name: String::from(format!("{}({})", name, len)),
         }
     }
 }
 
 impl Arp {
+    pub fn get_name(&self) -> String {
+        self.patterns[self.cur_id].name.clone()
+    }
     pub fn new(patterns: Vec<ArpLead>) -> Self {
         //Check that we have at least one pattern for each scale
         let mut sc: [bool; 3] = [false; 3];
