@@ -73,28 +73,37 @@ pub fn run(
     perc: Perc,
     arp: Arp,
     acid: Acid,
+    port: Option<u32>,
 ) -> Result<(), TSeqError> {
     let midi_out = MidiOutput::new("out")?;
     let out_ports = midi_out.ports();
-    let out_port: &MidiOutputPort = match out_ports.len() {
-        0 => return Err(TSeqError::NoOutput()),
-        1 => {
-            println!(
-                "Choosing the only available output port: {}",
-                midi_out.port_name(&out_ports[0]).unwrap()
-            );
-            &out_ports[0]
-        }
-        _ => {
-            println!("\nAvailable output ports:");
-            for (i, p) in out_ports.iter().enumerate() {
-                println!("{}: {}", i, midi_out.port_name(p).unwrap());
-            }
 
-            let port_number: usize = prompt_default("Select output port", 0)?;
-            match out_ports.get(port_number) {
-                None => return Err(TSeqError::PortNumber()),
-                Some(x) => x,
+    let out_port = if let Some(p) = port {
+        match out_ports.get(p as usize) {
+            None => return Err(TSeqError::PortNumber()),
+            Some(x) => x,
+        }
+    } else {
+        match out_ports.len() {
+            0 => return Err(TSeqError::NoOutput()),
+            1 => {
+                println!(
+                    "Choosing the only available output port: {}",
+                    midi_out.port_name(&out_ports[0]).unwrap()
+                );
+                &out_ports[0]
+            }
+            _ => {
+                println!("\nAvailable output ports:");
+                for (i, p) in out_ports.iter().enumerate() {
+                    println!("{}: {}", i, midi_out.port_name(p).unwrap());
+                }
+
+                let port_number: usize = prompt_default("Select output port", 0)?;
+                match out_ports.get(port_number) {
+                    None => return Err(TSeqError::PortNumber()),
+                    Some(x) => x,
+                }
             }
         }
     };

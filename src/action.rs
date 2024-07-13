@@ -73,7 +73,7 @@ impl Action {
         let mut opt = false;
         for c in s.chars() {
             match c {
-                's' => action.system = Some(System::StartStop),
+                's' | '=' => action.system = Some(System::StartStop),
                 'q' => action.system = Some(System::Quit),
                 '0' => action.stage = Some(Stage::Break),
                 '1' => action.stage = Some(Stage::Drop),

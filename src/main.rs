@@ -6,6 +6,7 @@ use break_::Break0;
 use breakbeat::Breakbeat0;
 use drop::Drop0;
 use high_pass::HighPass0;
+use std::env;
 use tseq::sequence::Sequence;
 use tseq::{
     run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Perc, Rythm, Scale::*, Timing::*,
@@ -184,9 +185,17 @@ fn main() {
 
     let acid = Acid::new(vec![/*acid_0, acid_1, acid_2, acid_3,*/ acid_4]);
 
+    let args: Vec<String> = env::args().collect();
+
+    let port = if args.len() == 2 {
+        Some(args[1].parse::<u32>().unwrap())
+    } else {
+        None
+    };
+
     //TODO: print at the begining all the MIDI channels used
     //TODO: print which acid and which arps (+infos nb subpattern arps) are played
-    match run(1, patterns, perc, arp, acid) {
+    match run(1, patterns, perc, arp, acid, port) {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[ERROR] {}", e);
