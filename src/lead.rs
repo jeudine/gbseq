@@ -21,6 +21,7 @@ pub struct Lead1 {
     prev_state: Lead1State,
     end_note: bool,
     start_note: bool,
+    start_note_reg: bool,
     prev_psy_note: u8,
 }
 
@@ -90,7 +91,20 @@ impl Lead0 {
         }
 
         match self.state {
-            Lead0State::Arp => res.append(&mut self.arp.get_trig(step, root)),
+            Lead0State::Arp => {
+                if step % 96 == 0 {
+                    if self.start_note {
+                        self.start_note_reg = true;
+                        self.start_note = false;
+                    } else if self.start_note_reg {
+                        self.start_note_reg = false;
+                    }
+                }
+
+                if !self.start_note && !self.start_note_reg {
+                    res.append(&mut self.arp.get_trig(step, root));
+                }
+            }
             Lead0State::Atm => {
                 if step % 96 == 0 {
                     if self.start_note {
@@ -143,6 +157,7 @@ impl Lead0 {
 
         if let Lead0State::Arp = state {
             self.arp.next_pattern(scale);
+            self.start_note = true;
         }
 
         self.prev_state = self.state;
@@ -171,6 +186,7 @@ impl Lead1 {
             prev_state: Lead1State::default(),
             end_note: false,
             start_note: false,
+            start_note_reg: false,
             prev_psy_note: 0,
         }
     }
@@ -200,18 +216,39 @@ impl Lead1 {
                 _ => {}
             }
         }
-        if self.start_note {
-            self.start_note = false;
-            self.prev_psy_note = root;
-            res.push(Trig {
-                start_end: true,
-                channel_id: LEAD1_CHANNEL,
-                note: root,
-                velocity: 100,
-            });
-        }
+
         match self.state {
-            Lead1State::Acid => res.append(&mut self.acid.get_trig(step, root)),
+            Lead1State::Acid => {
+                if step % 96 == 0 {
+                    if self.start_note {
+                        self.start_note_reg = true;
+                        self.start_note = false;
+                    } else if self.start_note_reg {
+                        self.start_note_reg = false;
+                    }
+                }
+
+                if !self.start_note && !self.start_note_reg {
+                    res.append(&mut self.acid.get_trig(step, root));
+                }
+            }
+            Lead1State::Psy => {
+                if step % 96 == 0 {
+                    if self.start_note {
+                        self.start_note_reg = true;
+                        self.start_note = false;
+                    } else if self.start_note_reg {
+                        self.start_note_reg = false;
+                        self.prev_psy_note = root;
+                        res.push(Trig {
+                            start_end: true,
+                            channel_id: LEAD1_CHANNEL,
+                            note: root,
+                            velocity: 100,
+                        });
+                    }
+                }
+            }
             _ => {}
         }
         res

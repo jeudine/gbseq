@@ -119,7 +119,10 @@ impl Sequence for HighPass0 {
 
         if !no_hh {
             trigger(conn, &state_data.hh);
+            trigger(conn, &state_data.perc);
         }
         trigger(conn, &state_data.perc);
+        trigger(conn, &state_data.lead0);
+        trigger(conn, &state_data.lead1);
     }
 }
