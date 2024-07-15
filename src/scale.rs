@@ -20,3 +20,21 @@ impl fmt::Display for Scale {
         )
     }
 }
+
+impl Scale {
+    pub fn next(self) -> Self {
+        match self {
+            Self::NaturalMinor => Self::HarmonicMinor,
+            Self::HarmonicMinor => Self::PhrygianMode,
+            Self::PhrygianMode => Self::NaturalMinor,
+        }
+    }
+
+    pub fn prev(self) -> Self {
+        match self {
+            Self::NaturalMinor => Self::PhrygianMode,
+            Self::HarmonicMinor => Self::NaturalMinor,
+            Self::PhrygianMode => Self::HarmonicMinor,
+        }
+    }
+}

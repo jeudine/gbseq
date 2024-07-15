@@ -69,6 +69,11 @@ pub enum SelPatt {
     Prev,
     Next,
 }
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum SelScale {
+    _Prev,
+    Next,
+}
 
 impl Transition {
     pub fn is_transition_in(&self) -> bool {
@@ -92,7 +97,7 @@ pub struct State {
     pub sel_patt: Option<SelPatt>,
     pub sel_lead0: Option<Lead0State>,
     pub sel_lead1: Option<Lead1State>,
-    pub sel_scale: Option<Scale>,
+    pub sel_scale: Option<SelScale>,
     pub stage: Stage,
     next_stage: Stage,
     pub cur_seq_id: usize,
@@ -188,6 +193,13 @@ impl State {
                     sel_patt = Some((s, bpm));
                 }
                 self.sel_patt = None;
+            }
+
+            if let Some(s) = self.sel_scale {
+                self.scale = match s {
+                    SelScale::_Prev => self.scale.prev(),
+                    SelScale::Next => self.scale.next(),
+                }
             }
         }
 
@@ -293,7 +305,10 @@ impl State {
         };
 
         let scale = if let Some(s) = self.sel_scale {
-            s
+            match s {
+                SelScale::_Prev => self.scale.prev(),
+                SelScale::Next => self.scale.next(),
+            }
         } else {
             self.scale
         };

@@ -1,6 +1,4 @@
-use crate::pattern::Note;
-use crate::scale::Scale;
-use crate::state::{Info, Lead0State, Lead1State, SelPatt, Stage, State};
+use crate::state::{Info, Lead0State, Lead1State, SelPatt, SelScale, Stage, State};
 use crate::Channel;
 use crate::{log_send, message};
 use std::default::Default;
@@ -21,6 +19,7 @@ struct Action {
     pattern: Option<SelPatt>,
     lead0: Option<Lead0State>,
     lead1: Option<Lead1State>,
+    scale: Option<SelScale>,
     arp_toggle: bool,
 }
 
@@ -63,6 +62,7 @@ pub fn handle(
     state.sel_lead0 = action.lead0;
     state.sel_lead1 = action.lead1;
     state.arp_toggle = action.arp_toggle;
+    state.sel_scale = action.scale;
 
     Some(state.get_info())
 }
@@ -84,6 +84,7 @@ impl Action {
                 '6' => action.perc_toggle = true,
                 '7' => action.pattern = Some(SelPatt::Prev),
                 '8' => action.pattern = Some(SelPatt::Next),
+                '9' => action.scale = Some(SelScale::Next),
                 '/' => {
                     if opt {
                         action.lead1 = Some(Lead1State::None);
