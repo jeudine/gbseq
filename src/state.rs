@@ -199,7 +199,8 @@ impl State {
                 self.scale = match s {
                     SelScale::_Prev => self.scale.prev(),
                     SelScale::Next => self.scale.next(),
-                }
+                };
+                self.sel_scale = None;
             }
         }
 
