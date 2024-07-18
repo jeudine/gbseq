@@ -1,9 +1,9 @@
-use midir::MidiOutputConnection;
-use rand::rngs::ThreadRng;
-use tseq::sequence::{
+use gbseq::sequence::{
     cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, SP1,
 };
-use tseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
+use gbseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
+use midir::MidiOutputConnection;
+use rand::rngs::ThreadRng;
 
 #[derive(Copy, Clone, Default)]
 pub struct Break0 {}

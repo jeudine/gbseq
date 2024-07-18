@@ -1,15 +1,15 @@
+use gbseq::sequence::{
+    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH, CC_LEVEL,
+    SP1,
+};
+use gbseq::{
+    log_send, only_trigger_ch, only_trigger_oh, trigger, Stage, StateData, Transition, PERC_CHANNEL,
+};
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::{
     distributions::{Distribution, Standard},
     Rng,
-};
-use tseq::sequence::{
-    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH, CC_LEVEL,
-    SP1,
-};
-use tseq::{
-    log_send, only_trigger_ch, only_trigger_oh, trigger, Stage, StateData, Transition, PERC_CHANNEL,
 };
 
 const SKIPPED_PROBA: f64 = 0.2;

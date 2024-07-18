@@ -5,12 +5,12 @@ mod high_pass;
 use break_::Break0;
 use breakbeat::Breakbeat0;
 use drop::Drop0;
-use high_pass::HighPass0;
-use std::env;
-use tseq::sequence::Sequence;
-use tseq::{
+use gbseq::sequence::Sequence;
+use gbseq::{
     run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Perc, Rythm, Scale::*, Timing::*,
 };
+use high_pass::HighPass0;
+use std::env;
 
 fn main() {
     let break0 = Break0::default();

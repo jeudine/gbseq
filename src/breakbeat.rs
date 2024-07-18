@@ -1,10 +1,10 @@
+use gbseq::sequence::{
+    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, SP1,
+};
+use gbseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
-use tseq::sequence::{
-    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, SP1,
-};
-use tseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
 
 const DOUBLED_PROBA: f64 = 0.33;
 
