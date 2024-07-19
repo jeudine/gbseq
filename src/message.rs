@@ -4,11 +4,10 @@ use crate::sequence::{control_change, CC_BANK_SEL, CC_KIT_SEL};
 use crate::state::{SelPatt, State};
 use crate::Channel;
 use std::sync::{Arc, Condvar, Mutex};
-use std::time::Instant;
 
 pub const CLOCK: u8 = 0xf8;
 pub const START: u8 = 0xfa;
-pub const CONTINUE: u8 = 0xfb;
+pub const _CONTINUE: u8 = 0xfb;
 pub const STOP: u8 = 0xfc;
 
 pub fn messages_gen(

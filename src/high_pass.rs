@@ -2,15 +2,10 @@ use gbseq::sequence::{
     cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH, CC_LEVEL,
     SP1,
 };
-use gbseq::{
-    log_send, only_trigger_ch, only_trigger_oh, trigger, Stage, StateData, Transition, PERC_CHANNEL,
-};
+use gbseq::{log_send, trigger, Stage, StateData, Transition, PERC_CHANNEL};
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
-use rand::{
-    distributions::{Distribution, Standard},
-    Rng,
-};
+use rand::Rng;
 
 const SKIPPED_PROBA: f64 = 0.2;
 const DOUBLED_PROBA: f64 = 0.2;
