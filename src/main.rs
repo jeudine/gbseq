@@ -5,9 +5,9 @@ mod high_pass;
 use break_::Break0;
 use breakbeat::Breakbeat0;
 use drop::Drop0;
-use gbseq::sequence::Sequence;
 use gbseq::{
-    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Perc, Rythm, Scale::*, Timing::*,
+    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Perc, Rythm, Scale::*, Sequence,
+    Timing::*,
 };
 use high_pass::HighPass0;
 use std::env;

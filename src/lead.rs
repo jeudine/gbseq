@@ -9,19 +9,19 @@ pub struct Lead0 {
     arp: Arp,
     state: Lead0State,
     prev_state: Lead0State,
+    next_state: Option<Lead0State>,
+    wait: bool,
     end_note: bool,
     prev_atm_note: u8,
-    start_note: bool,
-    start_note_reg: bool,
 }
 
 pub struct Lead1 {
     acid: Acid,
     state: Lead1State,
     prev_state: Lead1State,
+    next_state: Option<Lead1State>,
+    wait: bool,
     end_note: bool,
-    start_note: bool,
-    start_note_reg: bool,
     prev_psy_note: u8,
 }
 
@@ -31,10 +31,10 @@ impl Lead0 {
             arp,
             state: Lead0State::default(),
             prev_state: Lead0State::default(),
+            next_state: None,
             end_note: false,
             prev_atm_note: 0,
-            start_note: false,
-            start_note_reg: false,
+            wait: false,
         }
     }
 
@@ -47,6 +47,24 @@ impl Lead0 {
     }
 
     pub fn get_trigs(&mut self, step: u32, root: u8) -> Vec<Trig> {
+        let mut start_note = false;
+        if step % 96 == 0 {
+            if let Some(s) = self.next_state {
+                if self.wait {
+                    self.wait = false;
+                    start_note = true;
+                    match self.state {
+                        Lead0State::Arp | Lead0State::Atm => self.end_note = true,
+                        _ => {}
+                    }
+                    self.state = s;
+                    self.next_state = None;
+                } else {
+                    self.wait = true;
+                }
+            }
+        }
+
         let mut res = vec![];
         if self.end_note {
             self.end_note = false;
@@ -92,52 +110,35 @@ impl Lead0 {
 
         match self.state {
             Lead0State::Arp => {
-                if step % 96 == 0 {
-                    if self.start_note {
-                        self.start_note_reg = true;
-                        self.start_note = false;
-                    } else if self.start_note_reg {
-                        self.start_note_reg = false;
-                    }
-                }
-
-                if !self.start_note && !self.start_note_reg {
-                    res.append(&mut self.arp.get_trig(step, root));
-                }
+                res.append(&mut self.arp.get_trig(step, root));
             }
             Lead0State::Atm => {
-                if step % 96 == 0 {
-                    if self.start_note {
-                        self.start_note_reg = true;
-                        self.start_note = false;
-                    } else if self.start_note_reg {
-                        self.start_note_reg = false;
-                        self.prev_atm_note = root;
-                        res.push(Trig {
-                            start_end: true,
-                            channel_id: LEAD0_CHANNEL,
-                            note: self.prev_atm_note,
-                            velocity: 100,
-                        });
-                        res.push(Trig {
-                            start_end: true,
-                            channel_id: LEAD0_CHANNEL,
-                            note: self.prev_atm_note + 3,
-                            velocity: 100,
-                        });
-                        res.push(Trig {
-                            start_end: true,
-                            channel_id: LEAD0_CHANNEL,
-                            note: self.prev_atm_note + 7,
-                            velocity: 100,
-                        });
-                        res.push(Trig {
-                            start_end: true,
-                            channel_id: LEAD0_CHANNEL,
-                            note: self.prev_atm_note + 12,
-                            velocity: 100,
-                        });
-                    }
+                if step % 96 == 0 && start_note {
+                    self.prev_atm_note = root;
+                    res.push(Trig {
+                        start_end: true,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note,
+                        velocity: 100,
+                    });
+                    res.push(Trig {
+                        start_end: true,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note + 3,
+                        velocity: 100,
+                    });
+                    res.push(Trig {
+                        start_end: true,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note + 7,
+                        velocity: 100,
+                    });
+                    res.push(Trig {
+                        start_end: true,
+                        channel_id: LEAD0_CHANNEL,
+                        note: self.prev_atm_note + 12,
+                        velocity: 100,
+                    });
                 }
             }
             _ => {}
@@ -146,29 +147,22 @@ impl Lead0 {
     }
 
     pub fn toggle(&mut self, state: Lead0State, scale: Scale) {
-        match self.state {
-            Lead0State::Arp | Lead0State::Atm => self.end_note = true,
-            _ => {}
-        }
-
-        if let Lead0State::Atm = state {
-            self.start_note = true;
-        }
-
         if let Lead0State::Arp = state {
             self.arp.next_pattern(scale);
-            self.start_note = true;
         }
 
         self.prev_state = self.state;
-        self.state = state;
+        self.next_state = Some(state);
     }
 
     pub fn on(&self) -> bool {
         match self.state {
             Lead0State::Arp => true,
             Lead0State::Atm => true,
-            _ => false,
+            _ => match self.next_state {
+                Some(_) => true,
+                None => false,
+            },
         }
     }
 
@@ -184,15 +178,34 @@ impl Lead1 {
             acid,
             state: Lead1State::default(),
             prev_state: Lead1State::default(),
+            next_state: None,
+            wait: false,
             end_note: false,
-            start_note: false,
-            start_note_reg: false,
             prev_psy_note: 0,
         }
     }
 
     pub fn get_trigs(&mut self, step: u32, root: u8) -> Vec<Trig> {
+        let mut start_note = false;
+        if step % 96 == 0 {
+            if let Some(s) = self.next_state {
+                if self.wait {
+                    self.wait = false;
+                    start_note = true;
+                    match self.state {
+                        Lead1State::Acid | Lead1State::Psy => self.end_note = true,
+                        _ => {}
+                    }
+                    self.state = s;
+                    self.next_state = None;
+                } else {
+                    self.wait = true;
+                }
+            }
+        }
+
         let mut res = vec![];
+
         if self.end_note {
             self.end_note = false;
             match self.prev_state {
@@ -219,34 +232,17 @@ impl Lead1 {
 
         match self.state {
             Lead1State::Acid => {
-                if step % 96 == 0 {
-                    if self.start_note {
-                        self.start_note_reg = true;
-                        self.start_note = false;
-                    } else if self.start_note_reg {
-                        self.start_note_reg = false;
-                    }
-                }
-
-                if !self.start_note && !self.start_note_reg {
-                    res.append(&mut self.acid.get_trig(step, root));
-                }
+                res.append(&mut self.acid.get_trig(step, root));
             }
             Lead1State::Psy => {
-                if step % 96 == 0 {
-                    if self.start_note {
-                        self.start_note_reg = true;
-                        self.start_note = false;
-                    } else if self.start_note_reg {
-                        self.start_note_reg = false;
-                        self.prev_psy_note = root;
-                        res.push(Trig {
-                            start_end: true,
-                            channel_id: LEAD1_CHANNEL,
-                            note: root,
-                            velocity: 100,
-                        });
-                    }
+                if step % 96 == 0 && start_note {
+                    self.prev_psy_note = root;
+                    res.push(Trig {
+                        start_end: true,
+                        channel_id: LEAD1_CHANNEL,
+                        note: root,
+                        velocity: 100,
+                    });
                 }
             }
             _ => {}
@@ -255,20 +251,12 @@ impl Lead1 {
     }
 
     pub fn toggle(&mut self, state: Lead1State, scale: Scale) {
-        match self.state {
-            Lead1State::Acid | Lead1State::Psy => self.end_note = true,
-            _ => {}
-        }
-        if let Lead1State::Psy = state {
-            self.start_note = true;
-        }
-
         if let Lead1State::Acid = state {
             self.acid.next_pattern(scale);
         }
 
         self.prev_state = self.state;
-        self.state = state;
+        self.next_state = Some(state);
     }
 
     pub fn get_state(&self) -> (Lead1State, Option<String>) {
@@ -283,7 +271,10 @@ impl Lead1 {
         match self.state {
             Lead1State::Acid => true,
             Lead1State::Psy => true,
-            _ => false,
+            _ => match self.next_state {
+                Some(_) => true,
+                None => false,
+            },
         }
     }
 }

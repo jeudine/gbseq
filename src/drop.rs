@@ -1,9 +1,7 @@
-use gbseq::sequence::{
-    cc_parameter, control_change, param_value, start_note, Sequence, CC_LAYER, CC_LENGTH, CC_LEVEL,
-    SP1,
-};
 use gbseq::{
-    log_send, only_trigger_ch, only_trigger_oh, trigger, StateData, Transition, PERC_CHANNEL,
+    cc_parameter, control_change, log_send, only_trigger_ch, only_trigger_oh, param_value,
+    start_note, trigger, Sequence, StateData, Transition, CC_LAYER, CC_LENGTH, CC_LEVEL,
+    PERC_CHANNEL, SP1,
 };
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;

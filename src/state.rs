@@ -174,6 +174,7 @@ impl State {
                 && (self.transition == Transition::No || self.transition.is_transition_in())
             {
                 self.transition = Transition::Out(self.next_stage);
+                self.toggle_leads();
             } else if self.transition.is_transition_out() {
                 self.transition = Transition::In(self.stage);
                 self.stage = self.next_stage;
@@ -224,6 +225,17 @@ impl State {
         )
     }
 
+    pub fn toggle_leads(&mut self) {
+        if let Some(l) = self.sel_lead0 {
+            self.lead0.toggle(l, self.scale);
+            self.sel_lead0 = None;
+        }
+        if let Some(l) = self.sel_lead1 {
+            self.lead1.toggle(l, self.scale);
+            self.sel_lead1 = None;
+        }
+    }
+
     pub fn toggle(&mut self, rng: &mut ThreadRng) {
         if self.ch_toggle {
             self.hh.toggle_ch();
@@ -237,19 +249,13 @@ impl State {
             self.perc.toggle(rng);
             self.perc_toggle = false;
         }
-        if let Some(l) = self.sel_lead0 {
-            self.lead0.toggle(l, self.scale);
-            self.sel_lead0 = None;
-        }
-        if let Some(l) = self.sel_lead1 {
-            self.lead1.toggle(l, self.scale);
-            self.sel_lead1 = None;
-        }
 
         if self.arp_toggle {
             self.lead0.toogle_arp();
             self.arp_toggle = false;
         }
+
+        self.toggle_leads();
     }
 
     pub fn set_next_stage(&mut self, stage: &Stage) {

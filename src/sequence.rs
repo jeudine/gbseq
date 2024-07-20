@@ -34,7 +34,6 @@ pub trait Sequence {
     );
 }
 
-// TODO: put prameters relative to rample not in the lib
 pub const SP1: u8 = 48;
 pub const SP2: u8 = 49;
 pub const SP3: u8 = 50;
@@ -47,6 +46,7 @@ pub const CC_FREEZE: u8 = 3;
 pub const CC_LEVEL: u8 = 8;
 pub const CC_LAYER: u8 = 9;
 pub const CC_LENGTH: u8 = 5;
+pub const CC_BITS: u8 = 1;
 pub const CC_KIT_SEL: u8 = 0;
 pub const CC_BANK_SEL: u8 = 99;
 
