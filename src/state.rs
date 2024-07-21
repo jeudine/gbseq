@@ -7,6 +7,7 @@ use crate::perc::Perc;
 use crate::scale::Scale;
 use crate::sequence::Sequence;
 use crate::trig::Trig;
+use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use std::default::Default;
 use std::fmt;
@@ -166,7 +167,12 @@ impl State {
         self.patterns[self.cur_pattern_id].get_sequence(self.cur_seq_id, self.stage)
     }
 
-    pub fn update(&mut self, step: u32, rng: &mut ThreadRng) -> (StateData, Option<(SelPatt, u8)>) {
+    pub fn update(
+        &mut self,
+        step: u32,
+        conn: &mut MidiOutputConnection,
+        rng: &mut ThreadRng,
+    ) -> (StateData, Option<(SelPatt, u8)>) {
         let mut sel_patt: Option<(SelPatt, u8)> = None;
         if step % 96 == 0 {
             self.hh.start_bar();
@@ -178,11 +184,11 @@ impl State {
             } else if self.transition.is_transition_out() {
                 self.transition = Transition::In(self.stage);
                 self.stage = self.next_stage;
-                self.toggle(rng);
+                self.toggle(conn, rng);
             } else if self.next_stage == self.stage && self.transition.is_transition_in() {
                 self.transition = Transition::No;
             } else if self.next_stage == self.stage && self.transition == Transition::No {
-                self.toggle(rng);
+                self.toggle(conn, rng);
             }
 
             if let Some(s) = self.sel_patt {
@@ -236,7 +242,7 @@ impl State {
         }
     }
 
-    pub fn toggle(&mut self, rng: &mut ThreadRng) {
+    pub fn toggle(&mut self, conn: &mut MidiOutputConnection, rng: &mut ThreadRng) {
         if self.ch_toggle {
             self.hh.toggle_ch();
             self.ch_toggle = false;
@@ -246,7 +252,7 @@ impl State {
             self.oh_toggle = false;
         }
         if self.perc_toggle {
-            self.perc.toggle(rng);
+            self.perc.toggle(conn, rng);
             self.perc_toggle = false;
         }
 

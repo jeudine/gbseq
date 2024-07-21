@@ -19,6 +19,8 @@ fn main() {
     let breakbeat0 = Breakbeat0::default();
 
     let patterns = [
+        (130, Note::G),
+        (132, Note::A),
         (155, Note::C),
         (156, Note::A),
         (158, Note::C),
@@ -54,6 +56,7 @@ fn main() {
         [er_3, er_2, er_1],
         [er_4, er_3, er_1],
         [er_5, er_3, er_2],
+        [er_3, er_4, er_2],
     ]);
 
     // Arp

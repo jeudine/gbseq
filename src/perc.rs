@@ -1,11 +1,15 @@
-use crate::sequence::{param_value, SP2, SP3, SP4};
+use crate::sequence::{control_change, param_value, CC_LAYER, SP2, SP3, SP4};
 use crate::trig::Trig;
 use crate::PERC_CHANNEL;
+use crate::{cc_parameter, log_send};
+use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const NB_TRIGS: usize = 16;
+const NB_LAYERS: [usize; 3] = [2, 2, 2];
+const LAYER: [u8; 3] = [0, 1 << 6, 0x60];
 
 #[derive(Copy, Clone, Default)]
 pub struct Rythm {
@@ -52,10 +56,20 @@ impl Perc {
         vec![]
     }
 
-    pub fn toggle(&mut self, rng: &mut ThreadRng) {
+    pub fn toggle(&mut self, conn: &mut MidiOutputConnection, rng: &mut ThreadRng) {
         self.is_active = !self.is_active;
         if self.is_active {
             self.cur_pattern_id = rng.gen_range(0..self.patterns.len());
+            for i in 0..3 {
+                log_send(
+                    conn,
+                    &control_change(
+                        PERC_CHANNEL,
+                        cc_parameter(CC_LAYER, (i + 1) as u8),
+                        LAYER[rng.gen_range(0..NB_LAYERS[i])],
+                    ),
+                );
+            }
         }
     }
 
