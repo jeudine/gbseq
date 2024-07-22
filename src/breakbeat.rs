@@ -35,7 +35,6 @@ impl Sequence for Breakbeat0 {
         }
 
         // Kicks
-
         if let Transition::Out(Stage::Drop) = transition {
             if t == 0 || t == 12 || t == 36 || t == 48 || t == 60 {
                 log_send(
@@ -67,6 +66,11 @@ impl Sequence for Breakbeat0 {
             if t >= 72 {
                 no_hh = true;
             }
+        } else if transition.is_transition_out() && t == 95 {
+            log_send(
+                conn,
+                &control_change(PERC_CHANNEL, cc_parameter(CC_BITS, 0), param_value(0.0)),
+            );
         } else {
             if t == 0 || t == 36 {
                 if rng.gen_bool(BITS_PROBA) {
