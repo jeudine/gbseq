@@ -1,6 +1,7 @@
 use gbseq::{
-    cc_parameter, control_change, log_send, param_value, start_note, trigger, Sequence, Stage,
-    StateData, Transition, CC_BITS, CC_LAYER, PERC_CHANNEL, SP1,
+    cc_parameter, control_change, log_send, only_trigger_ch, only_trigger_oh, param_value,
+    start_note, trigger, Sequence, Stage, StateData, Transition, CC_BITS, CC_LAYER, PERC_CHANNEL,
+    SP1,
 };
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -97,8 +98,15 @@ impl Sequence for Breakbeat0 {
         }
 
         if !no_hh {
-            trigger(conn, &state_data.hh);
-            trigger(conn, &state_data.perc);
+            if state_data.ch_on {
+                only_trigger_ch(&state_data.hh, conn);
+            }
+            if state_data.oh_on {
+                only_trigger_oh(&state_data.hh, conn);
+            }
+            if state_data.perc_on {
+                trigger(conn, &state_data.perc);
+            }
         }
         trigger(conn, &state_data.lead0);
         trigger(conn, &state_data.lead1);

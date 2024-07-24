@@ -176,6 +176,7 @@ impl State {
         let mut sel_patt: Option<(SelPatt, u8)> = None;
         if step % 96 == 0 {
             self.hh.start_bar();
+            self.perc.start_bar();
             if self.next_stage != self.stage
                 && (self.transition == Transition::No || self.transition.is_transition_in())
             {

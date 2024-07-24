@@ -21,11 +21,12 @@ pub struct Perc {
     cur_pattern_id: usize,
     patterns: Vec<[Rythm; 3]>,
     is_active: bool,
+    last_bar: bool,
 }
 
 impl Perc {
     pub fn get_trigs(&mut self, step: u32) -> Vec<Trig> {
-        if self.is_active && step % 6 == 0 {
+        if (self.is_active || self.last_bar) && step % 6 == 0 {
             let pattern = &self.patterns[self.cur_pattern_id];
             let t = step / 6;
             let t = t as usize % NB_TRIGS;
@@ -64,6 +65,8 @@ impl Perc {
                     ),
                 );
             }
+        } else {
+            self.last_bar = true;
         }
     }
 
@@ -76,11 +79,17 @@ impl Perc {
             cur_pattern_id: 0,
             patterns,
             is_active: false,
+            last_bar: false,
         }
     }
 
     pub fn on(&self) -> bool {
         self.is_active
+    }
+
+    // To make the hh stay one bar longer after we turn them off
+    pub fn start_bar(&mut self) {
+        self.last_bar = false;
     }
 }
 
