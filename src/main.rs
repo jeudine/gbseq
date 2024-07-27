@@ -261,8 +261,30 @@ fn main() {
         vec![NaturalMinor],
         "I Follow you",
     );
+    let acid_5 = AcidLead::new(
+        vec![
+            ((8, 1), 127, false, Note),
+            ((8, 1), 89, false, Tie),
+            ((11, 1), 127, false, Note),
+            ((11, 1), 89, false, Tie),
+            ((0, 2), 127, false, Note),
+            ((0, 2), 89, false, Tie),
+            ((11, 1), 127, false, Note),
+            ((11, 1), 89, false, Tie),
+            ((8, 1), 127, false, Note),
+            ((8, 1), 89, false, Tie),
+            ((8, 1), 89, false, Tie),
+            ((7, 1), 89, true, Note),
+            ((0, 1), 89, false, Note),
+            ((0, 1), 89, false, Tie),
+            ((0, 1), 89, false, Tie),
+            ((7, 1), 89, true, Note),
+        ],
+        vec![HarmonicMinor],
+        "5",
+    );
 
-    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4]);
+    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4, acid_5]);
 
     let args: Vec<String> = env::args().collect();
 
@@ -273,7 +295,6 @@ fn main() {
     };
 
     //TODO: print at the begining all the MIDI channels used
-    //TODO: print which acid and which arps (+infos nb subpattern arps) are played
     match run(1, patterns, perc, arp, acid, port) {
         Ok(_) => {}
         Err(e) => {
