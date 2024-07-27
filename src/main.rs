@@ -105,7 +105,14 @@ fn main() {
         "4",
     );
 
-    let arp = Arp::new(vec![arp0, arp1, arp2, arp3, arp4]);
+    let arp5 = ArpLead::new(
+        vec![vec![(0, 0), (3, 0)], vec![(0, 0), (2, 0)]],
+        T8,
+        vec![NaturalMinor, HarmonicMinor],
+        "5",
+    );
+
+    let arp = Arp::new(vec![arp0, arp1, arp2, arp3, arp4, arp5]);
 
     // Acid
     let acid_0 = AcidLead::new(
