@@ -112,7 +112,21 @@ fn main() {
         "5",
     );
 
-    let arp = Arp::new(vec![arp0, arp1, arp2, arp3, arp4, arp5]);
+    let arp6 = ArpLead::new(
+        vec![vec![(3, 0), (7, 0), (10, 0), (2, 1)]],
+        T4,
+        vec![NaturalMinor],
+        "Cmaj7",
+    );
+
+    let arp7 = ArpLead::new(
+        vec![vec![(3, 0), (7, 0), (10, 0), (1, 1)]],
+        T4,
+        vec![PhrygianMode],
+        "C7",
+    );
+
+    let arp = Arp::new(vec![arp0, arp1, arp2, arp3, arp4, arp5, arp6, arp7]);
 
     // Acid
     let acid_0 = AcidLead::new(
