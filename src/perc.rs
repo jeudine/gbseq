@@ -8,8 +8,6 @@ use rand::Rng;
 
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
 const NB_TRIGS: usize = 128;
-const NB_LAYERS: [usize; 3] = [2, 2, 2];
-const LAYER: [u8; 3] = [0, 1 << 6, 0x60];
 
 #[derive(Copy, Clone)]
 pub struct Rythm {
@@ -68,9 +66,12 @@ impl Perc {
                     &control_change(
                         PERC_CHANNEL,
                         cc_parameter(CC_LAYER, (i + 1) as u8),
-                        LAYER[rng.gen_range(0..NB_LAYERS[i])],
+                        rng.gen_range(0..128),
                     ),
                 );
+                self.patterns[self.cur_pattern_id][i]
+                    .trigs
+                    .rotate_right(rng.gen_range(0..NB_TRIGS));
             }
         } else {
             self.last_bar = true;
@@ -160,20 +161,21 @@ impl Rythm {
                     }
                 }
                 /*
-                //DEBUG
-                println!("[{} {}]", a, b);
-                for i in 0..last_line {
-                for j in 0..mat_len[i] {
-                print!(
-                "{} ",
-                match mat[j][i] {
-                true => 1,
-                false => 0,
-                }
-                );
-                }
-                println!("");
-                }
+
+                                //DEBUG
+                                println!("[{} {}]", a, b);
+                                for i in 0..last_line {
+                                    for j in 0..mat_len[i] {
+                                        print!(
+                                            "{} ",
+                                            match mat[j][i] {
+                                                true => 1,
+                                                false => 0,
+                                            }
+                                        );
+                                    }
+                                    println!("");
+                                }
                 */
 
                 if second_len + b as usize > max_len || max_len == b as usize {
@@ -200,7 +202,6 @@ impl Rythm {
                 j += 1;
             }
         }
-
         Self { trigs: seq }
     }
 }

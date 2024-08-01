@@ -6,8 +6,8 @@ use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
-const DOUBLE_PROBA: f64 = 0.2;
-const SKIP_PROBA: f64 = 0.2;
+const DOUBLE_PROBA: f64 = 0.25;
+const SKIP_PROBA: f64 = 0.25;
 
 #[derive(Clone, Copy, Default)]
 pub struct Breakbeat0 {

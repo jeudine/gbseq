@@ -6,7 +6,7 @@ pub struct Pattern {
     pub root: Note,
     pub s_break: Vec<Box<dyn Sequence + Send>>,
     pub s_drop: Vec<Box<dyn Sequence + Send>>,
-    pub s_high_pass: Vec<Box<dyn Sequence + Send>>,
+    pub s_tension: Vec<Box<dyn Sequence + Send>>,
     pub s_breakbeat: Vec<Box<dyn Sequence + Send>>,
 }
 
@@ -15,7 +15,7 @@ impl Pattern {
         match stage {
             Stage::Break => &mut self.s_break[seq_id],
             Stage::Drop => &mut self.s_drop[seq_id],
-            Stage::HighPass => &mut self.s_high_pass[seq_id],
+            Stage::Tension => &mut self.s_tension[seq_id],
             Stage::Breakbeat => &mut self.s_breakbeat[seq_id],
         }
     }

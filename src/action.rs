@@ -77,7 +77,7 @@ impl Action {
                 'q' | '(' => action.system = Some(System::Quit),
                 '0' => action.stage = Some(Stage::Break),
                 '1' => action.stage = Some(Stage::Drop),
-                '2' => action.stage = Some(Stage::HighPass),
+                '2' => action.stage = Some(Stage::Tension),
                 '3' => action.stage = Some(Stage::Breakbeat),
                 '4' => action.ch_toggle = true,
                 '5' => action.oh_toggle = true,

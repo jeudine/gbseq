@@ -1,7 +1,6 @@
 use gbseq::{
     cc_parameter, control_change, log_send, only_trigger_ch, only_trigger_oh, param_value,
-    start_note, trigger, Sequence, StateData, Transition, CC_LAYER, CC_LENGTH, CC_LEVEL,
-    PERC_CHANNEL, SP1,
+    start_note, trigger, Sequence, StateData, Transition, CC_LAYER, CC_LEVEL, PERC_CHANNEL, SP1,
 };
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -96,16 +95,6 @@ impl Sequence for Drop0 {
         }
 
         if transition.is_transition_in() {
-            if t == 0 {
-                log_send(
-                    conn,
-                    &control_change(PERC_CHANNEL, cc_parameter(CC_LENGTH, 0), 127),
-                );
-                log_send(
-                    conn,
-                    &control_change(PERC_CHANNEL, cc_parameter(CC_LEVEL, 0), 63),
-                );
-            }
             if t == 12 {
                 log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
             }

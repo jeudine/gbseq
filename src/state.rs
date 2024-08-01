@@ -17,7 +17,7 @@ pub enum Stage {
     #[default]
     Break,
     Drop,
-    HighPass,
+    Tension,
     Breakbeat,
 }
 
