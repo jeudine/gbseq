@@ -139,7 +139,7 @@ impl Sequence for Drop0 {
                 if t == 84 && self.skipped {
                     log_send(
                         conn,
-                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
                     );
                     log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
                 }
@@ -184,7 +184,7 @@ impl Drop0 {
             );
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
             );
             log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
         }
@@ -196,7 +196,7 @@ impl Drop0 {
         } else if t == 84 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
             );
             log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
         }
@@ -220,7 +220,7 @@ impl Drop0 {
             );
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
             );
             log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
         }

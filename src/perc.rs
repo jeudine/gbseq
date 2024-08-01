@@ -7,13 +7,20 @@ use rand::rngs::ThreadRng;
 use rand::Rng;
 
 const SP_ARRAY: [u8; 3] = [SP2, SP3, SP4];
-const NB_TRIGS: usize = 16;
+const NB_TRIGS: usize = 128;
 const NB_LAYERS: [usize; 3] = [2, 2, 2];
 const LAYER: [u8; 3] = [0, 1 << 6, 0x60];
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
 pub struct Rythm {
     trigs: [bool; NB_TRIGS],
+}
+impl Default for Rythm {
+    fn default() -> Self {
+        Self {
+            trigs: [false; 128],
+        }
+    }
 }
 
 #[derive(Clone)]

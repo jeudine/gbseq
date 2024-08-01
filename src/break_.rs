@@ -38,7 +38,7 @@ impl Sequence for Break0 {
             } else if t == 84 {
                 log_send(
                     conn,
-                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
                 );
 
                 log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));

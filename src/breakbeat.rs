@@ -6,8 +6,8 @@ use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
-const DOUBLE_PROBA: f64 = 0.33;
-const SKIP_PROBA: f64 = 0.166;
+const DOUBLE_PROBA: f64 = 0.2;
+const SKIP_PROBA: f64 = 0.2;
 
 #[derive(Clone, Copy, Default)]
 pub struct Breakbeat0 {
@@ -30,7 +30,7 @@ impl Sequence for Breakbeat0 {
         if t == 0 && transition.is_transition_in() {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 0x60),
+                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 52),
             );
         }
 
@@ -39,7 +39,7 @@ impl Sequence for Breakbeat0 {
             if t == 84 {
                 log_send(
                     conn,
-                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 1 << 6),
+                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
                 );
 
                 log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
@@ -50,17 +50,29 @@ impl Sequence for Breakbeat0 {
             }
         } else if transition.is_transition_out() && t == 95 {
         } else {
-            if t == 0 {
-                if rng.gen_bool(SKIP_PROBA) {
-                    self.skipped = true;
-                } else {
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
-                    self.skipped = false;
-                }
+            if t == 0 && !self.skipped {
+                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
             }
 
-            if t == 12 && (self.skipped || rng.gen_bool(DOUBLE_PROBA)) {
+            if t == 12 && !self.skipped && rng.gen_bool(DOUBLE_PROBA) {
                 log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            }
+
+            if t == 24 {
+                if self.skipped {
+                    self.skipped = false;
+                    log_send(
+                        conn,
+                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 56),
+                    );
+                } else if rng.gen_bool(SKIP_PROBA) {
+                    self.skipped = true;
+                    log_send(
+                        conn,
+                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 104),
+                    );
+                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                }
             }
         }
 
