@@ -255,19 +255,38 @@ fn main() {
     let acid_5 = AcidLead::new(
         vec![
             ((0, 1), 127, false, Note),
+            ((0, 0), 89, true, Note),
             ((0, 0), 89, false, Note),
-            ((5, 1), 127, false, Note),
             ((0, 0), 89, false, Note),
-            ((7, 1), 127, false, Note),
-            ((7, 1), 89, false, Tie),
-            ((5, 1), 89, true, Note),
-            ((0, 1), 89, true, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((5, 0), 127, false, Note),
+            ((0, 0), 89, true, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((7, 0), 127, false, Note),
+            ((5, 0), 89, true, Note),
+            ((0, 0), 89, true, Note),
+            ((0, 0), 89, false, Note),
         ],
         vec![NaturalMinor, HarmonicMinor, PhrygianMode],
         "5",
     );
 
-    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4, acid_5]);
+    let acid_6 = AcidLead::new(
+        vec![
+            ((1, 0), 127, false, Note),
+            ((5, 0), 127, false, Note),
+            ((0, 1), 127, false, Note),
+            ((5, 0), 127, false, Note),
+        ],
+        vec![PhrygianMode],
+        "6",
+    );
+
+    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4, acid_5, acid_6]);
 
     let args: Vec<String> = env::args().collect();
 
