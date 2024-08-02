@@ -27,8 +27,7 @@ impl Sequence for Break0 {
                 conn,
                 &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
             );
-        }
-        if let Transition::Out(Stage::Drop) = transition {
+        } else if let Transition::Out(Stage::Drop) = transition {
             if t == 0 {
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.6)));
             } else if t == 24 {
@@ -48,11 +47,15 @@ impl Sequence for Break0 {
                 no_hh = true;
             }
         } else if let Transition::Out(Stage::Breakbeat) = transition {
-            if t >= 72 {
-                no_hh = true;
+            if t == 84 {
+                log_send(
+                    conn,
+                    &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                );
+
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
         }
-
         if !no_hh {
             if state_data.ch_on {
                 only_trigger_ch(&state_data.hh, conn);
@@ -60,11 +63,9 @@ impl Sequence for Break0 {
             if state_data.oh_on {
                 only_trigger_oh(&state_data.hh, conn);
             }
-            if state_data.stab_on {
-                trigger(conn, &state_data.stab);
-            }
         }
 
+        trigger(conn, &state_data.stab);
         trigger(conn, &state_data.lead0);
         trigger(conn, &state_data.lead1);
     }
