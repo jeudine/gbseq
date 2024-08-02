@@ -6,7 +6,7 @@ use break_::Break0;
 use breakbeat::Breakbeat0;
 use drop::Drop0;
 use gbseq::{
-    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Stab, Rythm, Scale::*, Sequence,
+    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Rythm, Scale::*, Sequence, Stab,
     Timing::*,
 };
 use std::env;
@@ -134,7 +134,17 @@ fn main() {
         "C7",
     );
 
-    let arp = Arp::new(vec![arp0, arp1, arp2, arp3, arp4, arp5, arp6, arp7]);
+    let arp8 = ArpLead::new(
+        vec![
+            vec![(7, -1), (0, 0), (5, 0), (7, 0)],
+            vec![(7, -1), (0, 0), (5, 0), (8, 0)],
+        ],
+        T4,
+        vec![NaturalMinor, HarmonicMinor, PhrygianMode],
+        "8",
+    );
+
+    let arp = Arp::new(vec![arp0, arp1, arp2, arp3, arp4, arp5, arp6, arp7, arp8]);
 
     // Acid
     let acid_0 = AcidLead::new(
@@ -220,78 +230,6 @@ fn main() {
         vec![HarmonicMinor],
         "3",
     );
-    /*
-        let acid_melody = AcidLead::new(
-            vec![
-                ((0, 1), 89, true, Note),
-                ((0, 1), 89, false, Tie),
-                ((3, 1), 89, false, Note),
-                ((3, 1), 89, false, Tie),
-                ((8, 1), 127, false, Note),
-                ((8, 1), 89, false, Tie),
-                ((8, 1), 89, false, Tie),
-                ((8, 1), 89, false, Tie),
-                ((0, 1), 89, true, Note),
-                ((0, 1), 89, false, Tie),
-                ((2, 1), 89, false, Note),
-                ((2, 1), 89, false, Tie),
-                ((8, 1), 127, false, Note),
-                ((8, 1), 89, false, Tie),
-                ((8, 1), 89, false, Tie),
-                ((8, 1), 89, false, Tie),
-                ((10, 0), 89, true, Note),
-                ((10, 0), 89, false, Tie),
-                ((2, 1), 89, false, Note),
-                ((2, 1), 89, false, Tie),
-                ((7, 1), 127, false, Note),
-                ((7, 1), 89, false, Tie),
-                ((7, 1), 89, false, Tie),
-                ((7, 1), 89, false, Tie),
-                ((8, 0), 89, true, Note),
-                ((8, 0), 89, false, Tie),
-                ((0, 1), 89, false, Note),
-                ((0, 1), 89, false, Tie),
-                ((5, 1), 127, false, Note),
-                ((5, 1), 89, false, Tie),
-                ((5, 1), 89, false, Tie),
-                ((5, 1), 89, false, Tie),
-                ((10, 0), 89, true, Note),
-                ((10, 0), 89, false, Tie),
-                ((2, 1), 89, false, Note),
-                ((2, 1), 89, false, Tie),
-                ((7, 1), 127, false, Note),
-                ((7, 1), 89, false, Tie),
-                ((7, 1), 89, false, Tie),
-                ((7, 1), 89, false, Tie),
-                ((10, 0), 89, true, Note),
-                ((10, 0), 89, false, Tie),
-                ((0, 1), 89, false, Note),
-                ((0, 1), 89, false, Tie),
-                ((5, 1), 127, false, Note),
-                ((5, 1), 89, false, Tie),
-                ((5, 1), 89, false, Tie),
-                ((5, 1), 89, false, Tie),
-                ((7, 0), 89, true, Note),
-                ((7, 0), 89, false, Tie),
-                ((10, 0), 89, false, Note),
-                ((10, 0), 89, false, Tie),
-                ((3, 1), 127, false, Note),
-                ((3, 1), 89, false, Tie),
-                ((3, 1), 89, false, Tie),
-                ((3, 1), 89, false, Tie),
-                ((7, 0), 89, true, Note),
-                ((7, 0), 89, false, Tie),
-                ((8, 0), 89, false, Note),
-                ((8, 0), 89, false, Tie),
-                ((10, 0), 127, false, Note),
-                ((10, 0), 89, false, Tie),
-                ((10, 0), 89, false, Tie),
-                ((10, 0), 89, false, Tie),
-            ],
-            vec![NaturalMinor],
-            "I Follow you",
-        );
-    */
     let acid_4 = AcidLead::new(
         vec![
             ((8, 1), 127, false, Note),
@@ -314,8 +252,22 @@ fn main() {
         vec![HarmonicMinor],
         "4",
     );
+    let acid_5 = AcidLead::new(
+        vec![
+            ((0, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((5, 1), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((7, 1), 127, false, Note),
+            ((7, 1), 89, false, Tie),
+            ((5, 1), 89, true, Note),
+            ((0, 1), 89, true, Note),
+        ],
+        vec![NaturalMinor, HarmonicMinor, PhrygianMode],
+        "5",
+    );
 
-    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4]);
+    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4, acid_5]);
 
     let args: Vec<String> = env::args().collect();
 
