@@ -1,6 +1,6 @@
 use gbseq::{
     cc_parameter, control_change, log_send, only_trigger_ch, only_trigger_oh, param_value,
-    start_note, trigger, Sequence, Stage, StateData, Transition, CC_LAYER, PERC_CHANNEL, SP1,
+    start_note, trigger, Sequence, Stage, StateData, Transition, CC_LAYER, RAMPLE_CHANNEL, SP1,
 };
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -25,23 +25,23 @@ impl Sequence for Break0 {
         if t == 0 && transition.is_transition_in() {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
             );
         }
         if let Transition::Out(Stage::Drop) = transition {
             if t == 0 {
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.6)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.6)));
             } else if t == 24 {
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.5)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.5)));
             } else if t == 48 {
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.4)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.4)));
             } else if t == 84 {
                 log_send(
                     conn,
-                    &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                    &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
                 );
 
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
 
             if t >= 72 {
@@ -60,8 +60,8 @@ impl Sequence for Break0 {
             if state_data.oh_on {
                 only_trigger_oh(&state_data.hh, conn);
             }
-            if state_data.perc_on {
-                trigger(conn, &state_data.perc);
+            if state_data.stab_on {
+                trigger(conn, &state_data.stab);
             }
         }
 

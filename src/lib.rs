@@ -6,12 +6,12 @@ mod hh;
 mod lead;
 mod message;
 mod pattern;
-mod perc;
 mod scale;
 mod sequence;
+mod stab;
 mod state;
 mod trig;
-pub use crate::perc::{Perc, Rythm};
+pub use crate::stab::{Rythm, Stab};
 pub use acid::{Acid, AcidLead, Timing};
 use action::handle;
 pub use arp::{Arp, ArpDiv, ArpLead};
@@ -32,7 +32,7 @@ use std::time::Instant;
 use thiserror::Error;
 pub use trig::trigger;
 
-pub const PERC_CHANNEL: u8 = 0;
+pub const RAMPLE_CHANNEL: u8 = 0;
 pub const CH_CHANNEL: u8 = 1;
 pub const OH_CHANNEL: u8 = 2;
 pub const LEAD0_CHANNEL: u8 = 3;
@@ -66,7 +66,7 @@ pub struct Step {}
 pub fn run(
     channel_id: u8,
     patterns: Vec<Pattern>,
-    perc: Perc,
+    stab: Stab,
     arp: Arp,
     acid: Acid,
     port: Option<u32>,
@@ -124,7 +124,7 @@ pub fn run(
         scale: Scale::default(),
     };
 
-    let state = State::new(patterns, perc, arp, acid);
+    let state = State::new(patterns, stab, arp, acid);
 
     let state_arc = Arc::new(Mutex::new(state));
 

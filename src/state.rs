@@ -3,9 +3,9 @@ use crate::arp::Arp;
 use crate::hh::HH;
 use crate::lead::{Lead0, Lead1};
 use crate::pattern::{Note, Pattern};
-use crate::perc::Perc;
 use crate::scale::Scale;
 use crate::sequence::Sequence;
+use crate::stab::Stab;
 use crate::trig::Trig;
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -103,12 +103,12 @@ pub struct State {
     next_stage: Stage,
     pub cur_seq_id: usize,
     hh: HH,
-    perc: Perc,
+    stab: Stab,
     lead0: Lead0,
     lead1: Lead1,
     pub ch_toggle: bool,
     pub oh_toggle: bool,
-    pub perc_toggle: bool,
+    pub stab_toggle: bool,
     transition: Transition,
     scale: Scale,
     pub arp_toggle: bool,
@@ -126,23 +126,23 @@ pub struct StateData {
     pub transition: Transition,
     pub root_note: u8,
     pub hh: Vec<Trig>,
-    pub perc: Vec<Trig>,
+    pub stab: Vec<Trig>,
     pub lead0: Vec<Trig>,
     pub lead1: Vec<Trig>,
 
     pub ch_on: bool,
     pub oh_on: bool,
-    pub perc_on: bool,
+    pub stab_on: bool,
     pub lead0_on: bool,
     pub lead1_on: bool,
 }
 
 impl State {
-    pub fn new(patterns: Vec<Pattern>, perc: Perc, arp: Arp, acid: Acid) -> Self {
+    pub fn new(patterns: Vec<Pattern>, stab: Stab, arp: Arp, acid: Acid) -> Self {
         Self {
             running: false,
             patterns,
-            perc,
+            stab,
             lead1: Lead1::new(acid),
             lead0: Lead0::new(arp),
             cur_pattern_id: 0,
@@ -156,7 +156,7 @@ impl State {
             hh: HH::default(),
             oh_toggle: false,
             ch_toggle: false,
-            perc_toggle: false,
+            stab_toggle: false,
             transition: Transition::default(),
             scale: Scale::default(),
             arp_toggle: false,
@@ -176,7 +176,6 @@ impl State {
         let mut sel_patt: Option<(SelPatt, u8)> = None;
         if step % 96 == 0 {
             self.hh.start_bar();
-            self.perc.start_bar();
             if self.next_stage != self.stage
                 && (self.transition == Transition::No || self.transition.is_transition_in())
             {
@@ -219,14 +218,14 @@ impl State {
                 transition: self.transition,
                 root_note,
                 hh: self.hh.get_trigs(step, root_note, rng),
-                perc: self.perc.get_trigs(step),
+                stab: self.stab.get_trigs(step),
                 lead0: self.lead0.get_trigs(step, root_note),
                 lead1: self.lead1.get_trigs(step, root_note),
                 ch_on: self.hh.ch_on(),
                 oh_on: self.hh.oh_on(),
                 lead0_on: self.lead0.on(),
                 lead1_on: self.lead1.on(),
-                perc_on: self.perc.on(),
+                stab_on: self.stab.on(),
             },
             sel_patt,
         )
@@ -252,9 +251,9 @@ impl State {
             self.hh.toggle_oh();
             self.oh_toggle = false;
         }
-        if self.perc_toggle {
-            self.perc.toggle(conn, rng);
-            self.perc_toggle = false;
+        if self.stab_toggle {
+            self.stab.toggle(conn, rng);
+            self.stab_toggle = false;
         }
 
         if self.arp_toggle {

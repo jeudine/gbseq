@@ -1,6 +1,6 @@
 use gbseq::{
     cc_parameter, control_change, log_send, only_trigger_ch, only_trigger_oh, param_value,
-    start_note, trigger, Sequence, StateData, Transition, CC_LAYER, CC_LEVEL, PERC_CHANNEL, SP1,
+    start_note, trigger, Sequence, StateData, Transition, CC_LAYER, CC_LEVEL, RAMPLE_CHANNEL, SP1,
 };
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -34,9 +34,8 @@ pub struct Drop0 {
     skipped: bool,
     ch_prev: bool,
     oh_prev: bool,
-    perc_prev: bool,
+    stab_prev: bool,
     toggle: Option<Toggle>,
-    perc_toggle: bool,
     ch_toggle: bool,
     oh_toggle: bool,
     lead0_prev: bool,
@@ -58,45 +57,38 @@ impl Sequence for Drop0 {
         let oh = state_data.oh_on;
         let lead0 = state_data.lead0_on;
         let lead1 = state_data.lead1_on;
-        let perc = state_data.perc_on;
+        let stab = state_data.stab_on;
 
         if t == 0 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
             );
             self.ch_toggle = false;
             self.oh_toggle = false;
-            self.perc_toggle = false;
             self.toggle = None;
             if transition == Transition::No {
                 self.ch_toggle = self.ch_prev ^ ch;
                 self.oh_toggle = self.oh_prev ^ oh;
-                self.perc_toggle = self.perc_prev ^ perc;
                 let lead0_toggle = !self.lead0_prev && lead0;
                 let lead1_toggle = !self.lead1_prev && lead1;
 
                 if (!oh && self.oh_prev) || (!ch && self.ch_prev) {
                     self.toggle = Some(Toggle::BarToggle);
-                } else if self.ch_toggle
-                    || self.oh_toggle
-                    || lead0_toggle
-                    || lead1_toggle
-                    || self.perc_toggle
-                {
+                } else if self.ch_toggle || self.oh_toggle || lead0_toggle || lead1_toggle {
                     self.toggle = Some(rng.gen());
                 }
             }
             self.ch_prev = ch;
             self.oh_prev = oh;
-            self.perc_prev = perc;
+            self.stab_prev = stab;
             self.lead0_prev = lead0;
             self.lead1_prev = lead1;
         }
 
         if transition.is_transition_in() {
             if t == 12 {
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
         }
 
@@ -108,17 +100,17 @@ impl Sequence for Drop0 {
             }
         } else {
             if t == 0 || t == 24 || t == 48 {
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
 
             if t == 12 && !transition.is_transition_in() && rng.gen_bool(DOUBLED_PROBA) {
-                log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
 
             if !transition.is_transition_out() {
                 if t == 72 {
                     if !rng.gen_bool(SKIPPED_PROBA) {
-                        log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                        log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
                         self.skipped = false;
                     } else {
                         self.skipped = true;
@@ -128,13 +120,13 @@ impl Sequence for Drop0 {
                 if t == 84 && self.skipped {
                     log_send(
                         conn,
-                        &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                        &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
                     );
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                    log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
                 }
             } else {
                 if t == 72 {
-                    log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+                    log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
                 }
             }
         }
@@ -146,9 +138,7 @@ impl Sequence for Drop0 {
         if (ch ^ self.ch_toggle) && (t < 72 || !self.ch_toggle) {
             only_trigger_ch(&state_data.hh, conn);
         }
-        if (perc ^ self.perc_toggle) && (t < 72 || !self.perc_toggle) {
-            trigger(conn, &state_data.perc);
-        }
+        trigger(conn, &state_data.stab);
         trigger(conn, &state_data.lead0);
         trigger(conn, &state_data.lead1);
     }
@@ -159,59 +149,59 @@ impl Drop0 {
         if t == 0 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LEVEL, 0), 90),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LEVEL, 0), 90),
             );
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.6)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.6)));
         } else if t == 24 {
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.5)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.5)));
         } else if t == 48 {
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.4)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.4)));
         } else if t == 84 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LEVEL, 0), 63),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LEVEL, 0), 63),
             );
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
             );
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
         }
     }
 
     fn fast_toggle(t: u32, conn: &mut MidiOutputConnection) {
         if t == 0 || t == 24 || t == 48 {
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
         } else if t == 84 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
             );
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
         }
     }
 
     fn mid_toggle(t: u32, conn: &mut MidiOutputConnection) {
         if t == 0 {
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
         } else if t == 24 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LEVEL, 0), 90),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LEVEL, 0), 90),
             );
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.5)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.5)));
         } else if t == 48 {
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.4)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.4)));
         } else if t == 84 {
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LEVEL, 0), 63),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LEVEL, 0), 63),
             );
             log_send(
                 conn,
-                &control_change(PERC_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
             );
-            log_send(conn, &start_note(PERC_CHANNEL, SP1, param_value(0.0)));
+            log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
         }
     }
 }

@@ -6,7 +6,7 @@ use break_::Break0;
 use breakbeat::Breakbeat0;
 use drop::Drop0;
 use gbseq::{
-    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Perc, Rythm, Scale::*, Sequence,
+    run, Acid, AcidLead, Arp, ArpDiv::*, ArpLead, Note, Pattern, Stab, Rythm, Scale::*, Sequence,
     Timing::*,
 };
 use std::env;
@@ -46,13 +46,13 @@ fn main() {
     })
     .collect();
 
-    // Percs
+    // Stabs
     let er_2 = Rythm::compute_euclidean_rythm(2);
     let er_3 = Rythm::compute_euclidean_rythm(3);
     let er_4 = Rythm::compute_euclidean_rythm(4);
     let er_5 = Rythm::compute_euclidean_rythm(5);
 
-    let perc = Perc::new(vec![
+    let stab = Stab::new(vec![
         [er_5, er_3, er_2],
         [er_3, er_5, er_2],
         [er_5, er_4, er_2],
@@ -326,7 +326,7 @@ fn main() {
     };
 
     //TODO: print at the begining all the MIDI channels used
-    match run(1, patterns, perc, arp, acid, port) {
+    match run(1, patterns, stab, arp, acid, port) {
         Ok(_) => {}
         Err(e) => {
             eprintln!("[ERROR] {}", e);

@@ -15,7 +15,7 @@ struct Action {
     stage: Option<Stage>,
     ch_toggle: bool,
     oh_toggle: bool,
-    perc_toggle: bool,
+    stab_toggle: bool,
     pattern: Option<SelPatt>,
     lead0: Option<Lead0State>,
     lead1: Option<Lead1State>,
@@ -57,7 +57,7 @@ pub fn handle(
 
     state.oh_toggle = action.oh_toggle;
     state.ch_toggle = action.ch_toggle;
-    state.perc_toggle = action.perc_toggle;
+    state.stab_toggle = action.stab_toggle;
     state.sel_patt = action.pattern;
     state.sel_lead0 = action.lead0;
     state.sel_lead1 = action.lead1;
@@ -81,7 +81,7 @@ impl Action {
                 '3' => action.stage = Some(Stage::Breakbeat),
                 '4' => action.ch_toggle = true,
                 '5' => action.oh_toggle = true,
-                '6' => action.perc_toggle = true,
+                '6' => action.stab_toggle = true,
                 '7' => action.pattern = Some(SelPatt::Prev),
                 '8' => action.pattern = Some(SelPatt::Next),
                 '9' => action.scale = Some(SelScale::Next),

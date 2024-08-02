@@ -1,6 +1,6 @@
 use crate::sequence::{control_change, param_value, CC_LAYER, SP2, SP3, SP4};
 use crate::trig::Trig;
-use crate::PERC_CHANNEL;
+use crate::RAMPLE_CHANNEL;
 use crate::{cc_parameter, log_send};
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -22,16 +22,15 @@ impl Default for Rythm {
 }
 
 #[derive(Clone)]
-pub struct Perc {
+pub struct Stab {
     cur_pattern_id: usize,
     patterns: Vec<[Rythm; 3]>,
     is_active: bool,
-    last_bar: bool,
 }
 
-impl Perc {
+impl Stab {
     pub fn get_trigs(&mut self, step: u32) -> Vec<Trig> {
-        if (self.is_active || self.last_bar) && step % 6 == 0 {
+        if self.is_active && step % 6 == 0 {
             let pattern = &self.patterns[self.cur_pattern_id];
             let t = step / 6;
             let t = t as usize % NB_TRIGS;
@@ -42,7 +41,7 @@ impl Perc {
                     if p.trigs[t] {
                         Some(Trig {
                             start_end: true,
-                            channel_id: PERC_CHANNEL,
+                            channel_id: RAMPLE_CHANNEL,
                             note: SP_ARRAY[i],
                             velocity: param_value(0.0),
                         })
@@ -64,7 +63,7 @@ impl Perc {
                 log_send(
                     conn,
                     &control_change(
-                        PERC_CHANNEL,
+                        RAMPLE_CHANNEL,
                         cc_parameter(CC_LAYER, (i + 1) as u8),
                         rng.gen_range(0..128),
                     ),
@@ -73,8 +72,6 @@ impl Perc {
                     .trigs
                     .rotate_right(rng.gen_range(0..NB_TRIGS));
             }
-        } else {
-            self.last_bar = true;
         }
     }
 
@@ -87,17 +84,11 @@ impl Perc {
             cur_pattern_id: 0,
             patterns,
             is_active: false,
-            last_bar: false,
         }
     }
 
     pub fn on(&self) -> bool {
         self.is_active
-    }
-
-    // To make the hh stay one bar longer after we turn them off
-    pub fn start_bar(&mut self) {
-        self.last_bar = false;
     }
 }
 
