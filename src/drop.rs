@@ -1,6 +1,7 @@
 use gbseq::{
     cc_parameter, control_change, log_send, only_trigger_ch, only_trigger_oh, param_value,
-    start_note, trigger, Sequence, StateData, Transition, CC_LAYER, CC_LEVEL, RAMPLE_CHANNEL, SP1,
+    start_note, trigger, Sequence, Stage, StateData, Transition, CC_LAYER, CC_LEVEL,
+    RAMPLE_CHANNEL, SP1,
 };
 use midir::MidiOutputConnection;
 use rand::rngs::ThreadRng;
@@ -98,36 +99,45 @@ impl Sequence for Drop0 {
                 Toggle::MidToggle => Drop0::mid_toggle(t, conn),
                 Toggle::FastToggle => Drop0::fast_toggle(t, conn),
             }
+        } else if let Transition::Out(Stage::Tension) = transition {
+            if t == 0 || t == 24 || t == 48 || t == 72 {
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
+            }
+        } else if let Transition::Out(Stage::Break) = transition {
+            if t == 0 || t == 24 || t == 48 || t == 72 {
+                log_send(
+                    conn,
+                    &start_note(RAMPLE_CHANNEL, SP1, param_value(t as f32 / 96.0)),
+                );
+            }
+        } else if let Transition::Out(Stage::Breakbeat) = transition {
+            if t == 0 || t == 24 || t == 48 {
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
+            } else if t == 84 {
+                log_send(
+                    conn,
+                    &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                );
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
+            }
         } else {
             if t == 0 || t == 24 || t == 48 {
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
-            }
-
-            if t == 12 && !transition.is_transition_in() && rng.gen_bool(DOUBLED_PROBA) {
+            } else if t == 12 && !transition.is_transition_in() && rng.gen_bool(DOUBLED_PROBA) {
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
-            }
-
-            if !transition.is_transition_out() {
-                if t == 72 {
-                    if !rng.gen_bool(SKIPPED_PROBA) {
-                        log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
-                        self.skipped = false;
-                    } else {
-                        self.skipped = true;
-                    }
-                }
-
-                if t == 84 && self.skipped {
-                    log_send(
-                        conn,
-                        &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
-                    );
+            } else if t == 72 {
+                if !rng.gen_bool(SKIPPED_PROBA) {
                     log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
+                    self.skipped = false;
+                } else {
+                    self.skipped = true;
                 }
-            } else {
-                if t == 72 {
-                    log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
-                }
+            } else if t == 84 && self.skipped {
+                log_send(
+                    conn,
+                    &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 26),
+                );
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
         }
 
