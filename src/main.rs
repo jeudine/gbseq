@@ -285,8 +285,44 @@ fn main() {
         vec![PhrygianMode],
         "6",
     );
+    let acid_7 = AcidLead::new(
+        vec![
+            ((0, 0), 127, false, Note),
+            ((1, 0), 89, false, Note),
+            ((0, 0), 89, false, Note),
+            ((1, 0), 127, false, Note),
+            ((0, 0), 89, false, Note),
+            ((1, 0), 89, false, Note),
+            ((3, 0), 127, false, Note),
+            ((7, 0), 89, false, Note),
+            ((8, 0), 89, false, Note),
+            ((7, 0), 89, false, Note),
+            ((3, 0), 89, true, Note),
+            ((1, 0), 127, true, Note),
+            ((8, 0), 89, false, Note),
+            ((7, 0), 89, false, Note),
+            ((3, 0), 127, false, Note),
+            ((1, 0), 89, false, Note),
+        ],
+        vec![PhrygianMode],
+        "7",
+    );
+    let acid_8 = AcidLead::new(
+        vec![
+            ((0, 1), 127, false, Note),
+            ((1, 1), 127, false, Note),
+            ((7, 1), 127, false, Note),
+            ((8, 1), 127, false, Note),
+            ((7, 1), 127, false, Note),
+            ((1, 1), 127, false, Note),
+        ],
+        vec![PhrygianMode],
+        "8",
+    );
 
-    let acid = Acid::new(vec![acid_0, acid_1, acid_2, acid_3, acid_4, acid_5, acid_6]);
+    let acid = Acid::new(vec![
+        acid_0, acid_1, acid_2, acid_3, acid_4, acid_5, acid_6, acid_7, acid_8,
+    ]);
 
     let args: Vec<String> = env::args().collect();
 
