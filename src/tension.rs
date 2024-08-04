@@ -80,7 +80,18 @@ impl Sequence for Tension0 {
         }
         let mut no_hh = false;
 
-        if transition.is_transition_in() {
+        if let Transition::In(Drop) = transition {
+            if t == 0 || t == 24 || t == 48 || t == 72 {
+                match self.state {
+                    State::Rumble => {
+                        log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
+                    }
+                    State::HighPass => {
+                        log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.6)));
+                    }
+                }
+            }
+        } else if transition.is_transition_in() {
             match self.state {
                 State::Rumble => {
                     if t == 0 {
@@ -95,9 +106,7 @@ impl Sequence for Tension0 {
                 }
 
                 State::HighPass => {
-                    if t == 0 || t == 24 || t == 48 || t == 72 {
-                        log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.6)));
-                    }
+                    unreachable!()
                 }
             }
         } else if let Transition::Out(Stage::Drop) = transition {

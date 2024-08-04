@@ -22,13 +22,6 @@ impl Sequence for Break0 {
 
         let transition = state_data.transition;
 
-        if t == 0 && transition.is_transition_in() {
-            log_send(
-                conn,
-                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
-            );
-        }
-
         if let Transition::In(Stage::Drop) = transition {
             if t == 0 {
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.2)));
@@ -41,6 +34,10 @@ impl Sequence for Break0 {
             }
         } else if let Transition::Out(Stage::Drop) = transition {
             if t == 0 {
+                log_send(
+                    conn,
+                    &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
+                );
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.6)));
             } else if t == 24 {
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.5)));
