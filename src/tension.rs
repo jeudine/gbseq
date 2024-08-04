@@ -52,16 +52,27 @@ impl Sequence for Tension0 {
                             &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 78),
                         );
                     }
+                    Drop => {
+                        if rng.gen_bool(0.5) {
+                            self.state = State::HighPass;
+                            log_send(
+                                conn,
+                                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LEVEL, 0), 90),
+                            );
+                            log_send(
+                                conn,
+                                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
+                            );
+                        } else {
+                            self.state = State::Rumble;
+                            log_send(
+                                conn,
+                                &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 78),
+                            );
+                        }
+                    }
                     _ => {
-                        self.state = State::HighPass;
-                        log_send(
-                            conn,
-                            &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LEVEL, 0), 90),
-                        );
-                        log_send(
-                            conn,
-                            &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 0),
-                        );
+                        unreachable!()
                     }
                 },
                 _ => {}

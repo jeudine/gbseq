@@ -104,11 +104,14 @@ impl Sequence for Drop0 {
                 log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
         } else if let Transition::Out(Stage::Break) = transition {
-            if t == 0 || t == 24 || t == 48 || t == 72 {
+            if t == 0 {
                 log_send(
                     conn,
-                    &start_note(RAMPLE_CHANNEL, SP1, param_value(t as f32 / 96.0)),
+                    &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 78),
                 );
+            }
+            if t == 0 || t == 24 || t == 48 || t == 72 {
+                log_send(conn, &start_note(RAMPLE_CHANNEL, SP1, param_value(0.0)));
             }
         } else if let Transition::Out(Stage::Breakbeat) = transition {
             if t == 0 || t == 24 || t == 48 {
