@@ -52,7 +52,7 @@ impl Sequence for Tension0 {
                             &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 78),
                         );
                     }
-                    Drop => {
+                    _ => {
                         if rng.gen_bool(0.5) {
                             self.state = State::HighPass;
                             log_send(
@@ -70,9 +70,6 @@ impl Sequence for Tension0 {
                                 &control_change(RAMPLE_CHANNEL, cc_parameter(CC_LAYER, 0), 78),
                             );
                         }
-                    }
-                    _ => {
-                        unreachable!()
                     }
                 },
                 _ => {}
